@@ -54,7 +54,7 @@ int main() {
 
 
 
-	//Movimentações personagem soldado, X e Y.
+	//MovimentaÃ§Ãµes personagem soldado, X e Y.
 	//int image1 = walkright;
 	int pulo = 0;
 	int velocy = 0;
@@ -132,7 +132,7 @@ int main() {
 				pos_y = 380;
 				pulo = 0;
 				velocy = 0;
-				//Parar de pular ao encostar no chão
+				//Parar de pular ao encostar no chÃ£o
 				if (moving_left) jump_state = WALKING_LEFT;
 				else jump_state = WALKING_RIGHT;
 			}
@@ -157,7 +157,9 @@ int main() {
 
 
 
-
+if (pos_x + 75 > 400 && pos_x < 550 && pos_y + 128 > pos_y && pos_y < pos_y + 100) {
+    al_draw_text(font, al_map_rgb(0, 0, 0), 640, 360, ALLEGRO_ALIGN_CENTER, "Teste");
+}
 
 		switch (jump_state) {
 		case WALKING_RIGHT:
