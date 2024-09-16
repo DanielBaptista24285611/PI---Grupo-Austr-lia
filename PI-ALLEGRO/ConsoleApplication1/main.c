@@ -157,8 +157,8 @@ int main() {
 
 
 
-if (pos_x + 75 > 400 && pos_x < 550 && pos_y + 128 > pos_y && pos_y < pos_y + 100) {
-    al_draw_text(font, al_map_rgb(0, 0, 0), 640, 360, ALLEGRO_ALIGN_CENTER, "Teste");
+if (pos_x + 75 > 320 && pos_x < 350 && pos_y + 128 > pos_y && pos_y < pos_y + 100) {
+	al_draw_text(font, al_map_rgb(0, 0, 0), 640, 360, ALLEGRO_ALIGN_CENTER, "Teste");
 }
 
 		switch (jump_state) {
