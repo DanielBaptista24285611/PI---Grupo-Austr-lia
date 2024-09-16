@@ -1,6 +1,6 @@
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_font.h>
-//#include <allegro5/allegro_ttf.h>
+#include <allegro5/allegro_ttf.h>
 #include <allegro5/allegro_image.h>
 #include <allegro5/keyboard.h>
 #include <allegro5/allegro_audio.h>
@@ -17,7 +17,7 @@ int main() {
 
 	al_init();
 	al_init_font_addon();
-	//al_init_ttf_addon();
+	al_init_ttf_addon();
 	al_init_image_addon();
 	al_install_keyboard();
 	al_install_audio();
@@ -27,8 +27,8 @@ int main() {
 	ALLEGRO_DISPLAY* display = al_create_display(1280, 720);
 	al_set_window_position(display, 200, 200);
 
-	ALLEGRO_FONT* font = al_create_builtin_font();
-	ALLEGRO_TIMER* timer = al_create_timer(1.0 / FPS);
+	ALLEGRO_FONT* font = al_load_font("./font.ttf", 60, 0);
+		ALLEGRO_TIMER* timer = al_create_timer(1.0 / FPS);
 
 	//IMAGENS
 	ALLEGRO_BITMAP* walkright = al_load_bitmap("./walkright.png");
