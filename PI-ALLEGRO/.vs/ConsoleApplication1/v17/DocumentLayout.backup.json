@@ -1,9 +1,9 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\Users\\danis\\source\\repos\\DanielBaptista24285611\\PI---Grupo-Austr-lia\\ConsoleApplication1\\",
+  "WorkspaceRootPath": "C:\\Users\\silva\\source\\repos\\PI---Grupo-Austr-lia\\PI---Grupo-Austr-lia\\PI---Grupo-Austr-lia\\PI-ALLEGRO\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{273C53DE-8644-43E3-8C4F-BBB7CF8799CD}|ConsoleApplication1\\ConsoleApplication1.vcxproj|C:\\Users\\danis\\source\\repos\\DanielBaptista24285611\\PI---Grupo-Austr-lia\\ConsoleApplication1\\ConsoleApplication1\\main.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "AbsoluteMoniker": "D:0:0:{273C53DE-8644-43E3-8C4F-BBB7CF8799CD}|ConsoleApplication1\\ConsoleApplication1.vcxproj|C:\\Users\\silva\\source\\repos\\PI---Grupo-Austr-lia\\PI---Grupo-Austr-lia\\PI---Grupo-Austr-lia\\PI-ALLEGRO\\ConsoleApplication1\\main.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{273C53DE-8644-43E3-8C4F-BBB7CF8799CD}|ConsoleApplication1\\ConsoleApplication1.vcxproj|solutionrelative:ConsoleApplication1\\main.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     }
   ],
@@ -14,17 +14,21 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 0,
+          "SelectedChildIndex": 1,
           "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+            },
             {
               "$type": "Document",
               "DocumentIndex": 0,
               "Title": "main.c",
-              "DocumentMoniker": "C:\\Users\\danis\\source\\repos\\DanielBaptista24285611\\PI---Grupo-Austr-lia\\ConsoleApplication1\\ConsoleApplication1\\main.c",
+              "DocumentMoniker": "C:\\Users\\silva\\source\\repos\\PI---Grupo-Austr-lia\\PI---Grupo-Austr-lia\\PI---Grupo-Austr-lia\\PI-ALLEGRO\\ConsoleApplication1\\main.c",
               "RelativeDocumentMoniker": "ConsoleApplication1\\main.c",
-              "ToolTip": "C:\\Users\\danis\\source\\repos\\DanielBaptista24285611\\PI---Grupo-Austr-lia\\ConsoleApplication1\\ConsoleApplication1\\main.c",
+              "ToolTip": "C:\\Users\\silva\\source\\repos\\PI---Grupo-Austr-lia\\PI---Grupo-Austr-lia\\PI---Grupo-Austr-lia\\PI-ALLEGRO\\ConsoleApplication1\\main.c",
               "RelativeToolTip": "ConsoleApplication1\\main.c",
-              "ViewState": "AgIAAFQAAAAAAAAAAAAAADoAAAAOAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABgAAAAXAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
               "WhenOpened": "2024-09-11T04:10:30.737Z",
               "EditorCaption": ""

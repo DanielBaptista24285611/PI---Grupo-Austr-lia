@@ -10,7 +10,11 @@
 //infos, sprite idle soldado!
 // largura 896 / 7 = 128;
 // altura 128 / 1 = 128;
+int tela2() {
 
+	main();
+	return 0;
+}
 
 float FPS = 20.0;
 int main() {
@@ -191,7 +195,11 @@ if (pos_x + 75 > 320 && pos_x < 350 && pos_y + 128 > pos_y && pos_y < pos_y + 10
 		default:
 			break;
 		}
+		//mudança de tela
 
+		if (pos_x > 1180) {
+			tela2();
+		}
 		al_flip_display();
 	}
 	//Destroi imagens
