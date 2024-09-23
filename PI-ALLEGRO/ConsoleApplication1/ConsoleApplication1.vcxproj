@@ -24,22 +24,6 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Image Include="backgroundfloresta.jpeg" />
-    <Image Include="estrutura.png" />
-    <Image Include="Idle.png" />
-    <Image Include="Jump.png" />
-    <Image Include="Shot_1.png" />
-    <Image Include="Walkleft.png" />
-    <Image Include="Walkright.png" />
-    <Image Include="wood_spike.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Font Include="fonte\DigitalDisco-Thin.ttf" />
-  </ItemGroup>
-  <ItemGroup>
-    <Media Include="metralhadora.mp3" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>

@@ -13,12 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="imagens">
-      <UniqueIdentifier>{decef6fc-d2e0-4b67-b2fc-8b2fa5f01fbf}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="audios">
-      <UniqueIdentifier>{ef7f41cc-07fb-41be-88ed-4322e8a5d802}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.c">
@@ -27,37 +21,5 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Font Include="fonte\DigitalDisco-Thin.ttf" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="estrutura.png" />
-    <Image Include="backgroundfloresta.jpeg">
-      <Filter>imagens</Filter>
-    </Image>
-    <Image Include="Jump.png">
-      <Filter>imagens</Filter>
-    </Image>
-    <Image Include="Idle.png">
-      <Filter>imagens</Filter>
-    </Image>
-    <Image Include="Shot_1.png">
-      <Filter>imagens</Filter>
-    </Image>
-    <Image Include="Walkleft.png">
-      <Filter>imagens</Filter>
-    </Image>
-    <Image Include="Walkright.png">
-      <Filter>imagens</Filter>
-    </Image>
-    <Image Include="wood_spike.png">
-      <Filter>imagens</Filter>
-    </Image>
-  </ItemGroup>
-  <ItemGroup>
-    <Media Include="metralhadora.mp3">
-      <Filter>audios</Filter>
-    </Media>
   </ItemGroup>
 </Project>
