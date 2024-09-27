@@ -25,6 +25,7 @@ int tela2() {
 	al_install_keyboard();
 	al_install_audio();
 	al_init_acodec_addon();
+	al_reserve_samples(1);
 
 
 	ALLEGRO_DISPLAY* display = al_create_display(1280, 720);
@@ -49,9 +50,9 @@ int tela2() {
 	ALLEGRO_BITMAP* bullet_left = al_load_bitmap("soldiersprites1/teste/bullet_left.png");
 	//Backgrounds
 	ALLEGRO_BITMAP* background_2 = al_load_bitmap("./backgrounds/backgroundfloresta2.jpg");
-	//Obstáculos
+	//ObstÃ¡culos
 	ALLEGRO_BITMAP* tronco3 = al_load_bitmap("./Obstaculos/wood_spike.png");
-	//Consumíveis
+	//ConsumÃ­veis
 	ALLEGRO_BITMAP* kitmedico = al_load_bitmap("./Consumiveis/Kitmedico1.png");
 	ALLEGRO_BITMAP* kitmunicao = al_load_bitmap("./consumiveis/kitmunicao1.png");
 
@@ -69,7 +70,7 @@ int tela2() {
 
 
 
-	//Movimentações personagem soldado, X e Y.
+	//MovimentaÃ§Ãµes personagem soldado, X e Y.
 	//int image1 = walkright;
 	int posicao = 0;
 	int pulo = 0;
@@ -82,12 +83,12 @@ int tela2() {
 	float frameidle = 0.f;
 	float frameright = 0.f;
 
-	//Variáveis dos consumíveis
+	//VariÃ¡veis dos consumÃ­veis
 	int kitmedicoX = 600;
 	int kitmunicaoX = 680;
 
 	//TEMPORIZADOR
-	float temporizador = 2.0; // Tempo em segundos para a execução acontecer
+	float temporizador = 2.0; // Tempo em segundos para a execuÃ§Ã£o acontecer
 	float tempo_decorrido = 0.0; // Tempo decorrido
 
 
@@ -116,9 +117,9 @@ int tela2() {
 		al_clear_to_color(al_map_rgb(255, 255, 255));
 		//Backgrounds
 		al_draw_bitmap(background_2, 0, 0, 0);
-		//Obstáculos
+		//ObstÃ¡culos
 		al_draw_bitmap(tronco3, 400, 516, 0);
-		//Consumíveis
+		//ConsumÃ­veis
 		//al_draw_bitmap(kitmedico, kitmedicoX, 600, 0);
 		//al_draw_bitmap(kitmunicao, kitmunicaoX, 600, 0);
 
@@ -151,7 +152,7 @@ int tela2() {
 				mov = true;
 			}
 			//ADICIONAR SOM DO TIRO!!!	
-			//al_play_sample(tiro, 1, 0, 1, ALLEGRO_PLAYMODE_LOOP, NULL);
+			al_play_sample(tiro, 0.3, 0.0, 0.4, ALLEGRO_PLAYMODE_ONCE, NULL);
 		}
 
 		else if (event.keyboard.keycode == ALLEGRO_KEY_SPACE && !pulo) {
@@ -191,7 +192,7 @@ int tela2() {
 				pos_y = 380;
 				pulo = 0;
 				velocy = 0;
-				//Parar de pular ao encostar no chão
+				//Parar de pular ao encostar no chÃ£o
 				if (moving_left) jump_state = WALKING_LEFT;
 				else jump_state = WALKING_RIGHT;
 			}
@@ -276,7 +277,7 @@ int tela2() {
 				tempo_decorrido = 0.0;
 			}
 		}
-		//Mudança de tela
+		//MudanÃ§a de tela
 
 		if (pos_x > 1280) {
 			tela2();
@@ -301,9 +302,9 @@ int tela2() {
 	al_destroy_bitmap(bullet_left);
 	//Backgrounds
 	al_destroy_bitmap(background_2);
-	//Obstáculos
+	//ObstÃ¡culos
 	al_destroy_bitmap(tronco3);
-	//Consumíveis
+	//ConsumÃ­veis
 	al_destroy_bitmap(kitmedico);
 	al_destroy_bitmap(kitmunicao);
 
@@ -354,9 +355,9 @@ int tela1() {
 	ALLEGRO_BITMAP* bullet_left = al_load_bitmap("soldiersprites1/teste/bullet_left.png");
 	//Backgrounds
 	ALLEGRO_BITMAP* background = al_load_bitmap("./backgrounds/backgroundfloresta.jpeg");
-	//Obstáculos
+	//ObstÃ¡culos
 	ALLEGRO_BITMAP* tronco3 = al_load_bitmap("./Obstaculos/wood_spike.png");
-	//Consumíveis
+	//ConsumÃ­veis
 	ALLEGRO_BITMAP* kitmedico = al_load_bitmap("./Consumiveis/Kitmedico1.png");
 	ALLEGRO_BITMAP* kitmunicao = al_load_bitmap("./consumiveis/kitmunicao1.png");
 
@@ -376,7 +377,7 @@ int tela1() {
 
 
 
-	//Movimentações personagem soldado, X e Y.
+	//MovimentaÃ§Ãµes personagem soldado, X e Y.
 	//int image1 = walkright;
 	int posicao = 0;
 	int pulo = 0;
@@ -389,12 +390,12 @@ int tela1() {
 	float frameidle = 0.f;
 	float frameright = 0.f;
 
-	//Variáveis dos consumíveis
+	//VariÃ¡veis dos consumÃ­veis
 	int kitmedicoX = 600;
 	int kitmunicaoX = 680;
 	
 	//TEMPORIZADOR
-	float temporizador = 2.0; // Tempo em segundos para a execução acontecer
+	float temporizador = 2.0; // Tempo em segundos para a execuÃ§Ã£o acontecer
 	float tempo_decorrido = 0.0; // Tempo decorrido
 
 
@@ -424,9 +425,9 @@ int tela1() {
 		al_clear_to_color(al_map_rgb(255, 255, 255));
 		//Backgrounds
 		al_draw_bitmap(background, 0, 0, 0);
-		//Obstáculos
+		//ObstÃ¡culos
 		al_draw_bitmap(tronco3, 400, 516, 0);
-		//Consumíveis
+		//ConsumÃ­veis
 		al_draw_bitmap(kitmedico, kitmedicoX, 600, 0);
 		al_draw_bitmap(kitmunicao, kitmunicaoX, 600, 0);
 
@@ -503,7 +504,7 @@ int tela1() {
 				pos_y = 380;
 				pulo = 0;
 				velocy = 0;
-				//Parar de pular ao encostar no chão
+				//Parar de pular ao encostar no chÃ£o
 				if (moving_left) jump_state = WALKING_LEFT;
 				else jump_state = WALKING_RIGHT;
 			}
@@ -590,7 +591,7 @@ int tela1() {
 			}
 		}
 
-		//Mudança de tela
+		//MudanÃ§a de tela
 
 		if (pos_x > 1280) {
 			tela2();
@@ -615,9 +616,9 @@ int tela1() {
 	al_destroy_bitmap(bullet_left);
 	//Backgrounds
 	al_destroy_bitmap(background);
-	//Obstáculos
+	//ObstÃ¡culos
 	al_destroy_bitmap(tronco3);
-	//Consumíveis
+	//ConsumÃ­veis
 	al_destroy_bitmap(kitmedico);
 	al_destroy_bitmap(kitmunicao);
 
