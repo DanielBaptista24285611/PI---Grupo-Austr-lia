@@ -5,6 +5,7 @@
 #include <allegro5/keyboard.h>
 #include <allegro5/allegro_audio.h>
 #include <allegro5/allegro_acodec.h>
+#include <stdio.h>
 
 
 //infos, sprite idle soldado!
@@ -12,6 +13,8 @@
 // altura 128 / 1 = 128;
 float FPS = 20.0;
 //bool controleDeTelas1 = true;
+
+//MEU
 int tela2() {
 
 
@@ -36,10 +39,14 @@ int tela2() {
 	ALLEGRO_BITMAP* walkright = al_load_bitmap("./soldiersprites1/Soldier_1/walkright.png");
 	ALLEGRO_BITMAP* walkleft = al_load_bitmap("./soldiersprites1/Soldier_1/walkleft.png");
 	ALLEGRO_BITMAP* jump_image = al_load_bitmap("./soldiersprites1/Soldier_1/jump.png");
-	ALLEGRO_BITMAP* idle = al_load_bitmap("./soldiersprites1/Soldier_1/idle.png");
+	ALLEGRO_BITMAP* idle_right = al_load_bitmap("./soldiersprites1/Soldier_1/idleRight.png");
+	ALLEGRO_BITMAP* idle_left = al_load_bitmap("./soldiersprites1/Soldier_1/idleLeft.png");
 	ALLEGRO_BITMAP* shot_image_right = al_load_bitmap("./soldiersprites1/Soldier_1/shot_1_right.png");
 	ALLEGRO_BITMAP* shot_image_left = al_load_bitmap("./soldiersprites1/Soldier_1/shot_1_left.png");
 	ALLEGRO_BITMAP* pegar_image = al_load_bitmap("./soldiersprites2/soldier_2/rest.png");
+	//ARMAS
+	ALLEGRO_BITMAP* bullet_right = al_load_bitmap("./soldiersprites1/teste/bullet_right.png");
+	ALLEGRO_BITMAP* bullet_left = al_load_bitmap("soldiersprites1/teste/bullet_left.png");
 	//Backgrounds
 	ALLEGRO_BITMAP* background_2 = al_load_bitmap("./backgrounds/backgroundfloresta2.jpg");
 	//Obstáculos
@@ -79,6 +86,9 @@ int tela2() {
 	int kitmedicoX = 600;
 	int kitmunicaoX = 680;
 
+	//TEMPORIZADOR
+	float temporizador = 2.0; // Tempo em segundos para a execução acontecer
+	float tempo_decorrido = 0.0; // Tempo decorrido
 
 
 	int pos_x = 0, pos_y = 380;
@@ -95,7 +105,8 @@ int tela2() {
 		WALKING_SHOT_RIGHT,
 		WALKING_SHOT_LEFT,
 		JUMPING,
-		IDLE,
+		IDLE_LEFT,
+		IDLE_RIGHT,
 		PEGAR
 	}characterState;
 
@@ -133,10 +144,12 @@ int tela2() {
 			posicao = 2;
 		}
 		else if (event.keyboard.keycode == ALLEGRO_KEY_B) {
-			if (moving_left) jump_state = WALKING_SHOT_LEFT;
-			else jump_state = WALKING_SHOT_RIGHT;
-			moving_left = false;
-			mov = true;
+			if (moving_left == true) jump_state = WALKING_SHOT_LEFT;
+			else {
+				jump_state = WALKING_SHOT_RIGHT;
+				moving_left = false;
+				mov = true;
+			}
 			//ADICIONAR SOM DO TIRO!!!	
 			//al_play_sample(tiro, 1, 0, 1, ALLEGRO_PLAYMODE_LOOP, NULL);
 		}
@@ -167,8 +180,7 @@ int tela2() {
 
 		}
 		else  if (mov == false) {
-			jump_state = IDLE;
-			posicao == 1;
+			jump_state = IDLE_RIGHT;
 		}
 
 		if (pulo) {
@@ -240,11 +252,29 @@ int tela2() {
 			al_draw_bitmap_region(pegar_image, 256 * (int)frame4px, current_frame_y, 256, 256, pos_x, pos_y, 0);
 			break;
 
-		case IDLE:
-			al_draw_bitmap_region(idle, 256 * (int)frameidle, current_frame_y, 256, 256, pos_x, pos_y, 0);
+		case IDLE_LEFT:
+			al_draw_bitmap_region(idle_left, 256 * (int)frameidle, current_frame_y, 256, 256, pos_x, pos_y, 0);
+			break;
+			
+		case IDLE_RIGHT: 
+			al_draw_bitmap_region(idle_right, 256 * (int)frameidle, current_frame_y, 256, 256, pos_x, pos_y, 0);
 			break;
 		default:
 			break;
+		}
+		if (event.type == ALLEGRO_EVENT_TIMER) {
+
+			tempo_decorrido += 1.0 / FPS;
+
+			if (tempo_decorrido >= temporizador) {
+				if (moving_left) {
+					jump_state = IDLE_LEFT;
+				}
+				else {
+					jump_state = IDLE_RIGHT;
+				}
+				tempo_decorrido = 0.0;
+			}
 		}
 		//Mudança de tela
 
@@ -260,11 +290,15 @@ int tela2() {
 	//Sprites Soldado
 	al_destroy_bitmap(walkright);
 	al_destroy_bitmap(walkleft);
-	al_destroy_bitmap(idle);
+	al_destroy_bitmap(idle_right);
+	al_destroy_bitmap(idle_left);
 	al_destroy_bitmap(shot_image_right);
 	al_destroy_bitmap(shot_image_left);
 	al_destroy_bitmap(jump_image);
 	al_destroy_bitmap(pegar_image);
+	//Armas
+	al_destroy_bitmap(bullet_right);
+	al_destroy_bitmap(bullet_left);
 	//Backgrounds
 	al_destroy_bitmap(background_2);
 	//Obstáculos
@@ -294,6 +328,7 @@ int tela1() {
 	al_install_keyboard();
 	al_install_audio();
 	al_init_acodec_addon();
+	al_reserve_samples(1);
 
 
 	ALLEGRO_DISPLAY* display1 = al_create_display(1280, 720);
@@ -303,15 +338,20 @@ int tela1() {
 	ALLEGRO_FONT* font = al_load_font("./fonte/font.ttf", 60, 0);
 	ALLEGRO_TIMER* timer = al_create_timer(1.0 / FPS);
 
+
 	//IMAGENS
 	//Sprites Soldado
 	ALLEGRO_BITMAP* walkright = al_load_bitmap("./soldiersprites1/Soldier_1/walkright.png");
 	ALLEGRO_BITMAP* walkleft = al_load_bitmap("./soldiersprites1/Soldier_1/walkleft.png");
 	ALLEGRO_BITMAP* jump_image = al_load_bitmap("./soldiersprites1/Soldier_1/jump.png");
-	ALLEGRO_BITMAP* idle = al_load_bitmap("./soldiersprites1/Soldier_1/idle.png");
+	ALLEGRO_BITMAP* idle_right = al_load_bitmap("./soldiersprites1/Soldier_1/idleRight.png");
+	ALLEGRO_BITMAP* idle_left = al_load_bitmap("./soldiersprites1/Soldier_1/idleLeft.png");
 	ALLEGRO_BITMAP* shot_image_right = al_load_bitmap("./soldiersprites1/Soldier_1/shot_1_right.png");
 	ALLEGRO_BITMAP* shot_image_left = al_load_bitmap("./soldiersprites1/Soldier_1/shot_1_left.png");
 	ALLEGRO_BITMAP* pegar_image = al_load_bitmap("./soldiersprites2/soldier_2/rest.png");
+	//ARMAS
+	ALLEGRO_BITMAP* bullet_right = al_load_bitmap("./soldiersprites1/teste/bullet_right.png");
+	ALLEGRO_BITMAP* bullet_left = al_load_bitmap("soldiersprites1/teste/bullet_left.png");
 	//Backgrounds
 	ALLEGRO_BITMAP* background = al_load_bitmap("./backgrounds/backgroundfloresta.jpeg");
 	//Obstáculos
@@ -327,6 +367,8 @@ int tela1() {
 
 	//FILAS DE EVENTOS
 	ALLEGRO_EVENT_QUEUE* event_queue = al_create_event_queue();
+
+
 	al_register_event_source(event_queue, al_get_display_event_source(display1));
 	al_register_event_source(event_queue, al_get_timer_event_source(timer));
 	al_register_event_source(event_queue, al_get_keyboard_event_source());
@@ -350,7 +392,10 @@ int tela1() {
 	//Variáveis dos consumíveis
 	int kitmedicoX = 600;
 	int kitmunicaoX = 680;
-
+	
+	//TEMPORIZADOR
+	float temporizador = 2.0; // Tempo em segundos para a execução acontecer
+	float tempo_decorrido = 0.0; // Tempo decorrido
 
 
 	int pos_x = 0, pos_y = 380;
@@ -367,11 +412,13 @@ int tela1() {
 		WALKING_SHOT_RIGHT,
 		WALKING_SHOT_LEFT,
 		JUMPING,
-		IDLE,
+		IDLE_LEFT,
+		IDLE_RIGHT,
 		PEGAR
 	}characterState;
 
 	characterState jump_state = WALKING_RIGHT; //Manter estado atual
+
 
 	while (true) {
 		al_clear_to_color(al_map_rgb(255, 255, 255));
@@ -385,10 +432,13 @@ int tela1() {
 
 		ALLEGRO_EVENT event;
 		al_wait_for_event(event_queue, &event);
+
+
 		if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
 			break;
 		}
 		else if (event.keyboard.keycode == ALLEGRO_KEY_ESCAPE) return false;
+		
 		else if (event.keyboard.keycode == ALLEGRO_KEY_RIGHT) {
 			posicao == 0;
 			pos_x += 5;
@@ -404,13 +454,14 @@ int tela1() {
 			mov = true;
 			posicao = 2;
 		}
+	
 		else if (event.keyboard.keycode == ALLEGRO_KEY_B) {
 			if (moving_left) jump_state = WALKING_SHOT_LEFT;
 			else jump_state = WALKING_SHOT_RIGHT;
 			moving_left = false;
 			mov = true;
 			//ADICIONAR SOM DO TIRO!!!	
-			//al_play_sample(tiro, 1, 0, 1, ALLEGRO_PLAYMODE_LOOP, NULL);
+			al_play_sample(tiro, 0.3, 0.0, 0.4, ALLEGRO_PLAYMODE_ONCE, NULL);
 		}
 
 		else if (event.keyboard.keycode == ALLEGRO_KEY_SPACE && !pulo) {
@@ -429,6 +480,7 @@ int tela1() {
 				kitmedicoX = -1000;
 
 			}
+
 			else if (pos_x > 560 && pos_x < 670 && pos_y + 128 > pos_y && pos_y < pos_y + 100) {
 				kitmunicaoX = -1000;
 			}
@@ -438,8 +490,8 @@ int tela1() {
 
 
 		}
-		else  if (mov == false) {
-			jump_state = IDLE;
+		else if (mov == false) {
+			jump_state = IDLE_RIGHT;
 			posicao == 1;
 		}
 
@@ -512,12 +564,32 @@ int tela1() {
 			al_draw_bitmap_region(pegar_image, 256 * (int)frame4px, current_frame_y, 256, 256, pos_x, pos_y, 0);
 			break;
 
-		case IDLE:
-			al_draw_bitmap_region(idle, 256 * (int)frameidle, current_frame_y, 256, 256, pos_x, pos_y, 0);
+		case IDLE_LEFT:
+			al_draw_bitmap_region(idle_left, 256 * (int)frameidle, current_frame_y, 256, 256, pos_x, pos_y, 0);
+			break;
+
+		case IDLE_RIGHT:
+			al_draw_bitmap_region(idle_right, 256 * (int)frameidle, current_frame_y, 256, 256, pos_x, pos_y, 0);
 			break;
 		default:
 			break;
+		} 
+		if (event.type == ALLEGRO_EVENT_TIMER) {
+
+			tempo_decorrido += 1.0 / FPS;
+
+			if (tempo_decorrido >= temporizador) {
+				if (moving_left) {
+					jump_state = IDLE_LEFT;
+				}
+				else {
+					jump_state = IDLE_RIGHT;
+				}
+
+				tempo_decorrido = 0.0;
+			}
 		}
+
 		//Mudança de tela
 
 		if (pos_x > 1280) {
@@ -532,11 +604,15 @@ int tela1() {
 	//Sprites Soldado
 	al_destroy_bitmap(walkright);
 	al_destroy_bitmap(walkleft);
-	al_destroy_bitmap(idle);
+	al_destroy_bitmap(idle_right);
+	al_destroy_bitmap(idle_left);
 	al_destroy_bitmap(shot_image_right);
 	al_destroy_bitmap(shot_image_left);
 	al_destroy_bitmap(jump_image);
 	al_destroy_bitmap(pegar_image);
+	//Armas
+	al_destroy_bitmap(bullet_right);
+	al_destroy_bitmap(bullet_left);
 	//Backgrounds
 	al_destroy_bitmap(background);
 	//Obstáculos
@@ -548,10 +624,12 @@ int tela1() {
 	//Destroi audios
 	//Soldado
 	al_destroy_sample(tiro);
-	//destroi fonts,eventos e tela
+	//destroi fonts,eventos,tela e timer
 	al_destroy_font(font);
 	al_destroy_display(display1);
 	al_destroy_event_queue(event_queue);
+	al_destroy_timer(timer);
+
 
 	return 0;
 
