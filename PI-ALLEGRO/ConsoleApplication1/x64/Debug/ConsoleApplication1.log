@@ -1,4 +1,0 @@
-﻿  main.c
-C:\Users\Diogo.DESKTOP-8OCSMG7\Documents\GitHub\PI---Grupo-Austr-lia\PI-ALLEGRO\ConsoleApplication1\main.c(134,12): warning C4553: '==': o resultado da expressão não usado; você pretendia que fosse '='?
-C:\Users\Diogo.DESKTOP-8OCSMG7\Documents\GitHub\PI---Grupo-Austr-lia\PI-ALLEGRO\ConsoleApplication1\main.c(406,12): warning C4553: '==': o resultado da expressão não usado; você pretendia que fosse '='?
-  ConsoleApplication1.vcxproj -> C:\Users\Diogo.DESKTOP-8OCSMG7\Documents\GitHub\PI---Grupo-Austr-lia\PI-ALLEGRO\x64\Debug\ConsoleApplication1.exe
