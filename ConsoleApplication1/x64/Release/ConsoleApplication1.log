@@ -1,0 +1,12 @@
+﻿  main.c
+C:\Users\danis\source\repos\PI---Grupo-Austr-lia\PI-ALLEGRO\ConsoleApplication1\main.c(132,12): warning C4553: '==': o resultado da expressão não usado; você pretendia que fosse '='?
+C:\Users\danis\source\repos\PI---Grupo-Austr-lia\PI-ALLEGRO\ConsoleApplication1\main.c(140,12): warning C4553: '==': o resultado da expressão não usado; você pretendia que fosse '='?
+C:\Users\danis\source\repos\PI---Grupo-Austr-lia\PI-ALLEGRO\ConsoleApplication1\main.c(452,12): warning C4553: '==': o resultado da expressão não usado; você pretendia que fosse '='?
+C:\Users\danis\source\repos\PI---Grupo-Austr-lia\PI-ALLEGRO\ConsoleApplication1\main.c(460,12): warning C4553: '==': o resultado da expressão não usado; você pretendia que fosse '='?
+C:\Users\danis\source\repos\PI---Grupo-Austr-lia\PI-ALLEGRO\ConsoleApplication1\main.c(504,12): warning C4553: '==': o resultado da expressão não usado; você pretendia que fosse '='?
+  Gerando código
+  2 of 3 functions (66.7%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    0 functions had inline decision re-evaluated but remain unchanged
+  Finalizada a geração de código
+  ConsoleApplication1.vcxproj -> C:\Users\danis\source\repos\PI---Grupo-Austr-lia\PI-ALLEGRO\x64\Release\ConsoleApplication1.exe
