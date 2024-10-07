@@ -424,7 +424,9 @@ static int tela2() {
 	ALLEGRO_BITMAP* kitmunicao = al_load_bitmap("./consumiveis/kitmunicao1.png");
 	//Estilizações
 	ALLEGRO_BITMAP* Estilizacao_Alien = al_load_bitmap("./Estilizacoes/EstAliens.png");
-	//ALLEGRO_BITMAP* sapo = al_load_bitmap("./Estilizacoes/sapo.png");
+	ALLEGRO_BITMAP* Estilizacao_Ossos = al_load_bitmap("./Estilizacoes/EstOssos.png");
+	ALLEGRO_BITMAP* Rei = al_load_bitmap("./Estilizacoes/Rei_EstOssos.png");
+	ALLEGRO_BITMAP* ossinhos = al_load_bitmap("./Estilizacoes/Ossinhos.png");
 
 
 	//Entrada base
@@ -519,7 +521,14 @@ static int tela2() {
 		al_draw_bitmap_region(Estilizacao_Alien, 0, 0, 300, 150, 760, 490, 0);
 		//al_draw_bitmap_region(Estilizacao_Alien, 0, 0, 300, 150, 600, 500, 0);
 		//Alien 3 y a
-		//al_draw_bitmap_region(Estilizacao_Alien, 0, 300, 225, 200, 1000, 320, 0);
+		//al_draw_bitmap_region(Estilizacao_Alien, 0, 300, 225, 200, 990, 375, 0);
+		//al_draw_bitmap_region(Estilizacao_Alien, 225, 320, 190, 88, 1160, 410, 0);
+		//Cobras
+		al_draw_bitmap_region(Estilizacao_Alien, 320, 135, 127, 120, 240, 500, 0);
+		al_draw_bitmap_region(Estilizacao_Alien,447, 150, 165, 100, 360, 510, 0);
+		//Ossos
+		al_draw_bitmap(ossinhos,1120,410, 0);
+		al_draw_bitmap(Rei, 1070, 390, 0);
 
 
 		//al_draw_bitmap_region(walkright, 256 * (int)frame, current_frame_y, 256, 256, pos_x, pos_y, 0);
