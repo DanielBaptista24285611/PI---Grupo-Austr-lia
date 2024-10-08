@@ -237,7 +237,7 @@ float FPS = 20.0;
 
 			tempo_decorrido += 1.0 / FPS;
 
-			if (tempo_decorrido >= temporizador) {
+			if ((tempo_decorrido >= temporizador) && !(jump_state = JUMPING)) {
 				if (moving_left) {
 					jump_state = IDLE_LEFT;
 				}
@@ -814,6 +814,10 @@ static int tela1() {
 		fprintf(stderr, "Falha ao inicializar acodec audio.\n");
 		return -1;
 	}
+	if (!al_reserve_samples(1)) {
+		fprintf(stderr, "Falha ao reservar amostras de áudio!\n");
+		return -1;
+	}
 
 
 	ALLEGRO_DISPLAY* display1 = al_create_display(1280, 720);
@@ -853,7 +857,8 @@ static int tela1() {
 
 	//AUDIOS
 	//Soldado
-	ALLEGRO_SAMPLE* tiro = al_load_sample("./Audios/metralhadora.mp3");
+	ALLEGRO_SAMPLE_ID id;
+	ALLEGRO_SAMPLE* tiro = al_load_sample("./Audios/metralhadora.wav");
 
 	//FILAS DE EVENTOS
 	ALLEGRO_EVENT_QUEUE* event_queue = al_create_event_queue();
@@ -908,6 +913,8 @@ static int tela1() {
 	static bool inicializado = false;
 	static bool bala_ativa = false;
 	bool troncoVivo = true;
+	
+	bool shot_control = false;
 	//al_draw_rectangle(200.0, 200.0, 100.0, 100.0, al_map_rgb(0, 255, 0), 6.0);
 	typedef enum {
 		WALKING_RIGHT,
@@ -1038,7 +1045,7 @@ static int tela1() {
 
 			tempo_decorrido += 1.0 / FPS;
 
-			if (tempo_decorrido >= temporizador) {
+			if ((tempo_decorrido >= temporizador) && !(jump_state == JUMPING)) {
 				if (moving_left) {
 					jump_state = IDLE_LEFT;
 				}
@@ -1049,6 +1056,7 @@ static int tela1() {
 				tempo_decorrido = 0.0;
 			}
 		}
+	
 		switch (event.keyboard.keycode) {
 		case ALLEGRO_KEY_LEFT:
 			pos_x -= 5; jump_state = WALKING_LEFT;
@@ -1071,6 +1079,7 @@ static int tela1() {
 			else if (pos_x > 560 && pos_x < 670 && pos_y + 128 > pos_y && pos_y < pos_y + 100) {
 				kitmunicaoX = -1000;
 			}
+
 			//al_draw_bitmap(kitmedico, 600, 600, 0);
 
 			//al_draw_bitmap(kitmunicao, 680, 600, 0);
@@ -1080,11 +1089,13 @@ static int tela1() {
 				jump_state = WALKING_SHOT_LEFT;
 				atirando = true;
 				pos_x_bullet = pos_x - 160;
+				al_play_sample(tiro, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
 			}
 			else {
 				jump_state = WALKING_SHOT_RIGHT;
 				atirando = true;
 				pos_x_bullet = pos_x + 160;
+				al_play_sample(tiro, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
 			}
 			break;
 		}
@@ -1297,7 +1308,7 @@ static int menu() {
 }
 int main()
 {    
-	//tela1();
-	menu();
+	tela1();
+	//menu();
 	return 0;
 }

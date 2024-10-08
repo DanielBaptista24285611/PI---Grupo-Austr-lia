@@ -1,8 +1,4 @@
 ﻿  main.c
-C:\Users\victor\source\repos\PI---Grupo-Austr-lia\PI-ALLEGRO\ConsoleApplication1\main.c(133,12): warning C4553: '==': o resultado da expressão não usado; você pretendia que fosse '='?
-C:\Users\victor\source\repos\PI---Grupo-Austr-lia\PI-ALLEGRO\ConsoleApplication1\main.c(141,12): warning C4553: '==': o resultado da expressão não usado; você pretendia que fosse '='?
-C:\Users\victor\source\repos\PI---Grupo-Austr-lia\PI-ALLEGRO\ConsoleApplication1\main.c(444,12): warning C4553: '==': o resultado da expressão não usado; você pretendia que fosse '='?
-C:\Users\victor\source\repos\PI---Grupo-Austr-lia\PI-ALLEGRO\ConsoleApplication1\main.c(452,12): warning C4553: '==': o resultado da expressão não usado; você pretendia que fosse '='?
-C:\Users\victor\source\repos\PI---Grupo-Austr-lia\PI-ALLEGRO\ConsoleApplication1\main.c(496,12): warning C4553: '==': o resultado da expressão não usado; você pretendia que fosse '='?
-  LINK : C:\Users\victor\Source\Repos\PI---Grupo-Austr-lia\PI-ALLEGRO\x64\Debug\ConsoleApplication1.exe não encontrado ou não compilado pelo o último link incremental; executando link completo
-  ConsoleApplication1.vcxproj -> C:\Users\victor\Source\Repos\PI---Grupo-Austr-lia\PI-ALLEGRO\x64\Debug\ConsoleApplication1.exe
+C:\Users\danis\source\repos\DanielBaptista24285611\PI---Grupo-Austr-lia\PI-ALLEGRO\ConsoleApplication1\main.c(321,4): warning C4013: 'tela2' indefinido; assumindo extern retornando int
+C:\Users\danis\source\repos\DanielBaptista24285611\PI---Grupo-Austr-lia\PI-ALLEGRO\ConsoleApplication1\main.c(860,20): warning C4101: 'id': variável local não referenciada
+  ConsoleApplication1.vcxproj -> C:\Users\danis\source\repos\DanielBaptista24285611\PI---Grupo-Austr-lia\PI-ALLEGRO\x64\Debug\ConsoleApplication1.exe
