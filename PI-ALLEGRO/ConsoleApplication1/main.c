@@ -835,11 +835,11 @@ static int tela2() {
 	ALLEGRO_BITMAP* kitmedico = al_load_bitmap("./Consumiveis/Kitmedico1.png");
 	ALLEGRO_BITMAP* kitmunicao = al_load_bitmap("./consumiveis/kitmunicao1.png");
 	//inimigo
-        ALLEGRO_BITMAP* inimigoright = al_load_bitmap("./backgrounds/inimigodireita.png");
-        ALLEGRO_BITMAP* inimigoleft = al_load_bitmap("./backgrounds/inimigoesquerda.png");
+        ALLEGRO_BITMAP* inimigoright = al_load_bitmap("./inimigos/inimigodireita.jpeg");
+        ALLEGRO_BITMAP* inimigoleft = al_load_bitmap("./inimigos/inimigoesquerda.jpeg");
         //general
-        ALLEGRO_BITMAP* generalright = al_load_bitmap("./backgrounds/generaldireita.png");
-        ALLEGRO_BITMAP* generalleft = al_load_bitmap("./backgrounds/generalesquerda.png");
+        ALLEGRO_BITMAP* generalright = al_load_bitmap("./inimigos/generaldireita.jpeg");
+        ALLEGRO_BITMAP* generalleft = al_load_bitmap("./inimigos/generalesquerda.jpeg");
 	//Estilizações
 	ALLEGRO_BITMAP* Estilizacao_Alien = al_load_bitmap("./Estilizacoes/EstAliens.png");
 	ALLEGRO_BITMAP* Estilizacao_Ossos = al_load_bitmap("./Estilizacoes/EstOssos.png");
