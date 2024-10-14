@@ -834,21 +834,20 @@ static int tela2() {
 	//ConsumÃ­veis
 	ALLEGRO_BITMAP* kitmedico = al_load_bitmap("./Consumiveis/Kitmedico1.png");
 	ALLEGRO_BITMAP* kitmunicao = al_load_bitmap("./consumiveis/kitmunicao1.png");
+	//inimigo
+        ALLEGRO_BITMAP* inimigoright = al_load_bitmap("./backgrounds/inimigodireita.png");
+        ALLEGRO_BITMAP* inimigoleft = al_load_bitmap("./backgrounds/inimigoesquerda.png");
+        //general
+        ALLEGRO_BITMAP* generalright = al_load_bitmap("./backgrounds/generaldireita.png");
+        ALLEGRO_BITMAP* generalleft = al_load_bitmap("./backgrounds/generalesquerda.png");
 	//Estilizações
 	ALLEGRO_BITMAP* Estilizacao_Alien = al_load_bitmap("./Estilizacoes/EstAliens.png");
 	ALLEGRO_BITMAP* Estilizacao_Ossos = al_load_bitmap("./Estilizacoes/EstOssos.png");
 	ALLEGRO_BITMAP* Rei = al_load_bitmap("./Estilizacoes/Rei_EstOssos.png");
 	ALLEGRO_BITMAP* ossinhos = al_load_bitmap("./Estilizacoes/Ossinhos.png");
-
-
 	//Entrada base
 	ALLEGRO_BITMAP* fundoporta = al_load_bitmap("./base/montanha.png");
 	ALLEGRO_BITMAP* porta = al_load_bitmap("./base/porta.png");
-
-
-
-
-
 	//AUDIOS
 	//Soldado
 	ALLEGRO_SAMPLE* tiro = al_load_sample("./Audios/metralhadora.mp3");
@@ -864,9 +863,6 @@ static int tela2() {
 		al_destroy_display(display);  // Limpa o que foi alocado antes de encerrar
 		return -1;
 	}
-
-
-
 	//MovimentaÃ§Ãµes personagem soldado, X e Y.
 	//int image1 = walkright;
 	int posicao = 0;
@@ -886,6 +882,39 @@ static int tela2() {
 	bool atirando = false;
 	float pos_x_bullet = 0.1;
 
+	//VARIÁVEIS INIMIGO
+float frameinimigo = 0.3f;
+int enemy_pos_x = 1200;
+int enemy_pos_y = 600;
+int enemy_velocity = 3; // Velocidade do inimigo
+bool enemy_moving_right = true; // Direção do movimento do inimigo
+
+//CONTROLE ESTADO DO ENEMY
+typedef enum {
+	INIMIGO_RIGHT,
+	INIMIGO_LEFT
+} enemyState;
+
+enemyState current_enemy_state = INIMIGO_RIGHT;
+
+//tamanho sprite general 
+// x = 295 / 3 = 98
+// y = 102 
+// 
+//VARIÁVEIS DO GENERAL
+float framegeneral = 0.3f;
+int gen_pos_x = 900;
+int gen_pos_y = 500;
+int gen_velocity = 2; // Velocidade do generaL
+bool gen_moving_right = true; // Direção do movimento do general
+
+//CONTROLE DO ESTADO DO GENERAL
+typedef enum {
+	GEN_RIGHT,
+	GEN_LEFT
+} GenState;
+
+GenState current_gen_state = GEN_RIGHT;
 	//VariÃ¡veis dos consumÃ­veis
 	int kitmedicoX = 600;
 	int kitmunicaoX = 680;
@@ -918,7 +947,7 @@ static int tela2() {
 	}characterState;
 
 	characterState jump_state = WALKING_RIGHT; //Manter estado atual
-
+        characterState enemy_state = INIMIGO_RIGHT;
 	while (true) {
 		al_clear_to_color(al_map_rgb(255, 255, 255));
 		//Backgrounds
@@ -941,8 +970,6 @@ static int tela2() {
 		//Ossos
 		al_draw_bitmap(ossinhos,1120,410, 0);
 		al_draw_bitmap(Rei, 1070, 390, 0);
-
-
 		//al_draw_bitmap_region(walkright, 256 * (int)frame, current_frame_y, 256, 256, pos_x, pos_y, 0);
 		//Consumíveis
 		//ObstÃ¡culos
@@ -950,7 +977,7 @@ static int tela2() {
 		//ConsumÃ­veis
 		//al_draw_bitmap(kitmedico, kitmedicoX, 600, 0);
 		//al_draw_bitmap(kitmunicao, kitmunicaoX, 600, 0);
-
+		
 		ALLEGRO_EVENT event;
 		al_wait_for_event(event_queue, &event);
 		if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
@@ -1028,12 +1055,12 @@ static int tela2() {
 			mov = true;
 			//Inverter imagem do pulo
 		}
-					else {
+				else {
 			al_draw_bitmap_region(jump_image, 256 * (int)frame2, current_frame_y, 256, 256, pos_x, pos_y, 0);
 			mov = true;
 
 		}
-					break;
+				break;
 		case PEGAR:
 			al_draw_bitmap_region(pegar_image, 256 * (int)frame4px, current_frame_y, 256, 256, pos_x, pos_y, 0);
 			break;
@@ -1048,6 +1075,55 @@ static int tela2() {
 		default:
 			break;
 		}
+
+		if (enemy_moving_right) {
+	enemy_pos_x += enemy_velocity; // Move para a direita
+	if (enemy_pos_x > 1280 - 183) { // 183 é a largura do sprite do inimigo
+		enemy_moving_right = false; // Muda a direção para a esquerda
+	}
+}
+else {
+	enemy_pos_x -= enemy_velocity; // Move para a esquerda
+	if (enemy_pos_x < 0) { // Verifica se atingiu o limite esquerdo
+		enemy_moving_right = true; // Muda a direção para a direita
+	}
+}
+
+// Lógica de animação do inimigo
+if (enemy_moving_right) {
+	enemy_state = INIMIGO_RIGHT;
+}
+else {
+	enemy_state = INIMIGO_LEFT;
+}
+
+//INIMIGO
+switch (enemy_state) {
+case INIMIGO_RIGHT:
+	al_draw_bitmap_region(inimigoright, 61 * (int)frameinimigo, 0, 183, 64, enemy_pos_x, enemy_pos_y, 0);
+	frameinimigo += 0.3f; // Avança o quadro
+	if (frameinimigo > 3) frameinimigo -= 3; // Reseta o quadro
+	break;
+
+case INIMIGO_LEFT:
+	al_draw_bitmap_region(inimigoleft, 61 * (int)frameinimigo, 0, 183, 64, enemy_pos_x, enemy_pos_y, 0);
+	frameinimigo += 0.3f; // Avança o quadro
+	if (frameinimigo > 3) frameinimigo -= 3; // Reseta o quadro
+	break;
+default:
+	break;
+}
+//Movimento GENERAL - deixei para caso ele precise se movimentar ou somente ser guarda costas
+switch (current_gen_state) {
+case GEN_RIGHT:	
+	al_draw_bitmap_region(generalright, 98 * (int)framegeneral, 0, 295, 102, gen_pos_x, gen_pos_y, 0);
+	break;
+case GEN_LEFT:
+	al_draw_bitmap_region(generalleft, 98 * (int)framegeneral, 0, 295, 102, gen_pos_x, gen_pos_y, 0);
+	break;
+default:
+	break;
+}
 		if (event.type == ALLEGRO_EVENT_TIMER) {
 
 			tempo_decorrido += 1.0 / FPS;
@@ -1177,7 +1253,11 @@ static int tela2() {
 	//ConsumÃ­veis
 	al_destroy_bitmap(kitmedico);
 	al_destroy_bitmap(kitmunicao);
-
+        //inimigos
+        al_destroy_bitmap(inimigoright);
+	al_destroy_bitmap(inimigoleft);
+        al_destroy_bitmap(generalright);
+        al_destroy_bitmap(generalleft);
 	//Destroi audios
 	//Soldado
 	al_destroy_sample(tiro);
