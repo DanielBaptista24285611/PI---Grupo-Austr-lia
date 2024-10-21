@@ -835,11 +835,11 @@ static int tela2() {
 	ALLEGRO_BITMAP* kitmedico = al_load_bitmap("./Consumiveis/Kitmedico1.png");
 	ALLEGRO_BITMAP* kitmunicao = al_load_bitmap("./consumiveis/kitmunicao1.png");
 	//inimigo
-    ALLEGRO_BITMAP* inimigoright = al_load_bitmap("./inimigos/inimigodireita.jpeg");
-    ALLEGRO_BITMAP* inimigoleft = al_load_bitmap("./inimigos/inimigoesquerda.jpeg");
+    ALLEGRO_BITMAP* inimigoright = al_load_bitmap("./inimigos/inimigodireita.png");
+    ALLEGRO_BITMAP* inimigoleft = al_load_bitmap("./inimigos/inimigoesquerda.png");
     //general
-    ALLEGRO_BITMAP* generalright = al_load_bitmap("./inimigos/generaldireita.jpeg");
-    ALLEGRO_BITMAP* generalleft = al_load_bitmap("./inimigos/generalesquerda.jpeg");
+    ALLEGRO_BITMAP* generalright = al_load_bitmap("./inimigos/generaldireita.png");
+    ALLEGRO_BITMAP* generalleft = al_load_bitmap("./inimigos/generalesquerda.png");
 	//Estilizações
 	ALLEGRO_BITMAP* Estilizacao_Alien = al_load_bitmap("./Estilizacoes/EstAliens.png");
 	ALLEGRO_BITMAP* Estilizacao_Ossos = al_load_bitmap("./Estilizacoes/EstOssos.png");
@@ -1034,12 +1034,12 @@ GenState current_gen_state = GEN_RIGHT;
 				al_play_sample(tiro, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
 			}
 			break;
-			case ALLEGRO_KEY_R:
-	if (pos_x > 1000) {
-		tela3();
+		case ALLEGRO_KEY_R:
+			if (pos_x > 1000) {
+				tela3();
 
-	}
-	break;
+			}
+			break;
 		}
 
 
@@ -1776,7 +1776,7 @@ static int menu() {
 	ALLEGRO_BITMAP* menu_opcoes_image = al_load_bitmap("./backgrounds/menu_opcoes_image.png");
 
 	//ALLEGRO_FONT* font = al_create_builtin_font();
-	ALLEGRO_FONT* font_realista = al_load_font("./fonte/airstrike.ttf", 60, 0);
+	ALLEGRO_FONT* font_realista = al_load_font("./fonte/airstrike.ttf", 40, 0);
 	ALLEGRO_TIMER* timer = al_create_timer(1.0 / FPS);
 
 	//FILAS DE EVENTOS
@@ -1808,32 +1808,39 @@ static int menu() {
 
 		ALLEGRO_EVENT event;
 		al_wait_for_event(event_queue, &event);
+		ALLEGRO_COLOR cor_padrao = al_map_rgb(255,255,255);
+		ALLEGRO_COLOR cor_selecionada = al_map_rgb(000,000,000);
 
-		if (event.keyboard.keycode == ALLEGRO_KEY_UP) {
-			controlador += 1;
+			al_draw_text(font_realista, controlador == 4 ? cor_selecionada : cor_padrao, 630, 176, ALLEGRO_ALIGN_CENTER, "JOGAR");
+			al_draw_text(font_realista, controlador == 3 ? cor_selecionada : cor_padrao, 630, 320, ALLEGRO_ALIGN_CENTER, "OPCOES");
+			al_draw_text(font_realista, controlador == 2 ? cor_selecionada : cor_padrao, 635, 467, ALLEGRO_ALIGN_CENTER, "TECLAS");
+			al_draw_text(font_realista, controlador == 1 ? cor_selecionada : cor_padrao, 630, 618, ALLEGRO_ALIGN_CENTER, "CREDITOS");
+		if (event.type == ALLEGRO_EVENT_KEY_DOWN) {
+			if (event.keyboard.keycode == ALLEGRO_KEY_UP) {
+				controlador++;
+				if (controlador > 4) {
+					controlador = 1;
+				}
+			}
+			else if (event.keyboard.keycode == ALLEGRO_KEY_DOWN) {
+				controlador--;
+				if (controlador < 1) {
+					controlador = 4;
+				}
+			}
+			else if (event.keyboard.keycode == ALLEGRO_KEY_ENTER) {
+				switch (controlador) {
+				case 4: tela1(); break;
+				case 3: // Chamar função de opções
+					break;
+				case 2: // Chamar função de teclas
+					break;
+				case 1: // Chamar função de créditos
+					break;
+				}
+			}
 		}
-		if (controlador == 4) {
-			al_draw_text(font_realista, al_map_rgb(250, 237, 39), 625, 176, ALLEGRO_ALIGN_CENTER, "JOGAR");
 
-		}
-		if (controlador == 4 && event.keyboard.keycode == ALLEGRO_KEY_ENTER) {
-			tela1();
-		}
-		else if (controlador == 3) {
-			al_draw_text(font_realista, al_map_rgb(250, 237, 39), 625, 320, ALLEGRO_ALIGN_CENTER, "OPCOES");
-
-		}
-		else if (controlador == 2) {
-			al_draw_text(font_realista, al_map_rgb(250, 237, 39), 625, 467, ALLEGRO_ALIGN_CENTER, "TECLAS");
-
-		}
-		else  if (controlador == 1) {
-			al_draw_text(font_realista, al_map_rgb(250, 237, 39), 625, 618, ALLEGRO_ALIGN_CENTER, "CREDITOS");
-
-		}
-		else if (controlador == 5) {
-			controlador = 1;
-		}
 		//al_draw_bitmap_region(menu_opcoes_image, menu_frame_x, menu_frame_y,800, 800, menu_pos_x, menu_pos_y,0);
 
 	//Mudança de tela
