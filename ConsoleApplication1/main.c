@@ -1034,6 +1034,12 @@ GenState current_gen_state = GEN_RIGHT;
 				al_play_sample(tiro, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
 			}
 			break;
+			case ALLEGRO_KEY_R:
+	if (pos_x > 1000) {
+		tela3();
+
+	}
+	break;
 		}
 
 
