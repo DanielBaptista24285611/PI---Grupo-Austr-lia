@@ -1,4 +1,0 @@
-﻿  main.c
-C:\Users\danis\source\repos\DanielBaptista24285611\PI---Grupo-Austr-lia\PI-ALLEGRO\ConsoleApplication1\main.c(321,4): warning C4013: 'tela2' indefinido; assumindo extern retornando int
-C:\Users\danis\source\repos\DanielBaptista24285611\PI---Grupo-Austr-lia\PI-ALLEGRO\ConsoleApplication1\main.c(860,20): warning C4101: 'id': variável local não referenciada
-  ConsoleApplication1.vcxproj -> C:\Users\danis\source\repos\DanielBaptista24285611\PI---Grupo-Austr-lia\PI-ALLEGRO\x64\Debug\ConsoleApplication1.exe
