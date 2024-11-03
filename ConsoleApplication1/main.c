@@ -324,6 +324,7 @@ int tela4() {
 		if (pos_x_bullet > 1280) atirando = false;
 
 		if (pos_x_bullet < 0) atirando = false;
+		if (pos_x < 0) pos_x = 0; // Hitbox do inicio
 		
 		al_flip_display();
 	}
@@ -576,6 +577,7 @@ else if (moving_right && moving_down) {
 		if (pos_x_bullet < 0) atirando = false;
 
 		if (pos_x > 777) tela4(); //MudanÃ§a de tela
+		if (pos_x < 0) pos_x = 0; // Hitbox do inicio
 
 		al_flip_display();
 	}
@@ -917,6 +919,7 @@ GenState current_gen_state = GEN_RIGHT;
 		else if (pos_x_bullet < 0) atirando = false;
 		
 		if (pos_x < -60) tela1(); //MudanÃ§a de tela
+		if (pos_x < 0) pos_x = 0;
 
 		al_flip_display();
 	}
@@ -1180,6 +1183,16 @@ static int tela1() {
 		else if (pos_x_bullet < 0) atirando = false;
 		
 		if (pos_x > 1280) tela2(); //MudanÃ§a de tela
+		if (pos_x < 0) pos_x = 0; // Hitbox do inicio
+		// Mecânica de escada
+		if (event.keyboard.keycode == ALLEGRO_KEY_RIGHT && pos_x + 75 > 300) {
+			pos_y += 3;
+		}
+		else if (event.keyboard.keycode == ALLEGRO_KEY_LEFT) {
+			if (pos_y > 380) {
+				pos_y -= 3;
+			}
+		}
 
 		al_flip_display();
 	}
