@@ -1237,7 +1237,7 @@ static int tela1() {
 		}
 		if (variaveis.pos_x < 0) variaveis.pos_x = 0; // Hitbox do inicio
 		// Mecânica de escada
-		if (event.keyboard.keycode == ALLEGRO_KEY_RIGHT && variaveis.pos_x + 75 > 300) { variaveis.pos_y += 3;
+		if (event.keyboard.keycode == ALLEGRO_KEY_RIGHT && variaveis.pos_x + 75 < 225) { variaveis.pos_y += 3;
 		}
 		else if (event.keyboard.keycode == ALLEGRO_KEY_LEFT) {
 			if (variaveis.pos_y > 380) { variaveis.pos_y -= 3;
