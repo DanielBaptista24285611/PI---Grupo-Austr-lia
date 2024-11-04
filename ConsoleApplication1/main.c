@@ -1265,6 +1265,7 @@ static int tela1() {
 
 	return 0;
 }
+
 static int menu() {
 	al_init();
 	if (!inicializar_Allegro()) {
@@ -1277,6 +1278,9 @@ static int menu() {
 	//IMAGENS
 	ALLEGRO_BITMAP* menu_image = al_load_bitmap("./backgrounds/backgroundmenu.png");
 	ALLEGRO_BITMAP* menu_opcoes_image = al_load_bitmap("./backgrounds/menu_opcoes_image.png");
+	ALLEGRO_BITMAP* menu_teclas = al_load_bitmap("./backgrounds/fundo-teclas.png");
+	ALLEGRO_BITMAP* menu_creditos = al_load_bitmap("./backgrounds/fundo-creditos.png");
+	ALLEGRO_BITMAP* botao_voltar = al_load_bitmap("./backgrounds/botao-voltar.png");
 	//ALLEGRO_FONT* font = al_create_builtin_font();
 	ALLEGRO_FONT* font_realista = al_load_font("./fonte/airstrike.ttf", 40, 0);
 	ALLEGRO_TIMER* timer = al_create_timer(1.0 / FPS);
@@ -1292,54 +1296,71 @@ static int menu() {
 		return -1;
 	}
 	//Variáveis
-	int menu_frame_x = 0, menu_frame_y = 0, menu_pos_x = 0, menu_pos_y = 0, controlador = 1;
+	int menu_frame_x = 0, menu_frame_y = 0, menu_pos_x = 0, menu_pos_y = 0, controlador = 1, estado_menu = 0;
 
 	while (true) {
 		//Background menu
 		al_draw_bitmap(menu_image, 0, 0, 0);
 		//Opções
-		al_draw_bitmap(menu_opcoes_image, 450, 50, 0);
+		al_draw_bitmap(menu_opcoes_image, 450, 80, 0);
 
 		ALLEGRO_EVENT event;
 		al_wait_for_event(event_queue, &event);
 		ALLEGRO_COLOR cor_padrao = al_map_rgb(255, 255, 255);
 		ALLEGRO_COLOR cor_selecionada = al_map_rgb(000, 000, 000);
 
-		al_draw_text(font_realista, controlador == 4 ? cor_selecionada : cor_padrao, 630, 176, ALLEGRO_ALIGN_CENTER, "JOGAR");
-		al_draw_text(font_realista, controlador == 3 ? cor_selecionada : cor_padrao, 630, 320, ALLEGRO_ALIGN_CENTER, "OPCOES");
-		al_draw_text(font_realista, controlador == 2 ? cor_selecionada : cor_padrao, 635, 467, ALLEGRO_ALIGN_CENTER, "TECLAS");
-		al_draw_text(font_realista, controlador == 1 ? cor_selecionada : cor_padrao, 630, 618, ALLEGRO_ALIGN_CENTER, "CREDITOS");
+		al_draw_text(font_realista, controlador == 3 ? cor_selecionada : cor_padrao, 630, 206, ALLEGRO_ALIGN_CENTER, "JOGAR");
+		al_draw_text(font_realista, controlador == 2 ? cor_selecionada : cor_padrao, 635, 350, ALLEGRO_ALIGN_CENTER, "TECLAS");
+		al_draw_text(font_realista, controlador == 1 ? cor_selecionada : cor_padrao, 630, 497, ALLEGRO_ALIGN_CENTER, "CREDITOS");
 		if (event.type == ALLEGRO_EVENT_KEY_DOWN) {
 			if (event.keyboard.keycode == ALLEGRO_KEY_UP) {
 				controlador++;
-				if (controlador > 4) {
-					controlador = 1;
+				if (controlador > 3) { controlador = 1;
 				}
 			}
 			else if (event.keyboard.keycode == ALLEGRO_KEY_DOWN) {
 				controlador--;
-				if (controlador < 1) {
-					controlador = 4;
+				if (controlador < 1) { controlador = 3;
 				}
 			}
 			else if (event.keyboard.keycode == ALLEGRO_KEY_ENTER) {
 				switch (controlador) {
-				case 4: tela1(); break;
-				case 3: // Chamar função de opções
+				case 3: tela1(); break;
+				case 2: estado_menu = 1;
 					break;
-				case 2: // Chamar função de teclas
-					break;
-				case 1: // Chamar função de créditos
+				case 1: estado_menu = 2;
 					break;
 				}
 			}
+		} else if (estado_menu == 1) {
+			al_draw_bitmap(menu_teclas, 0, 0, 0);
+			al_draw_bitmap(botao_voltar, 980, 600, 0);
+			al_draw_text(font_realista,  cor_padrao, 630, 30, ALLEGRO_ALIGN_CENTER, "TECLAS");
+			al_draw_text(font_realista, cor_padrao, 1090, 620, ALLEGRO_ALIGN_CENTER, "VOLTAR");
+
+			if (event.type == ALLEGRO_EVENT_KEY_DOWN && event.keyboard.keycode == ALLEGRO_KEY_ESCAPE) {
+				estado_menu = 0;
+			}
+		} else if (estado_menu == 2) {
+			al_draw_bitmap(menu_creditos, 0, 0, 0); 
+			al_draw_bitmap(botao_voltar, 980, 600, 0);
+			al_draw_text(font_realista, cor_padrao, 610, 30, ALLEGRO_ALIGN_CENTER, "CREDITOS");
+			al_draw_text(font_realista, cor_padrao, 1090, 620, ALLEGRO_ALIGN_CENTER, "VOLTAR");
+			if (event.type == ALLEGRO_EVENT_KEY_DOWN && event.keyboard.keycode == ALLEGRO_KEY_ESCAPE) {
+				estado_menu = 0;
+			}
 		}
+
+		if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) { break; }
 
 		al_flip_display();
 	}
 	//Destroi imagens
 	al_destroy_bitmap(menu_image);
 	al_destroy_bitmap(menu_opcoes_image);
+	al_destroy_bitmap(menu_teclas);
+	al_destroy_bitmap(menu_creditos);
+	al_destroy_bitmap(botao_voltar);
 	//destroi fonts,eventos,tela e timer
 	al_destroy_font(font_realista);
 	al_destroy_display(display1);
