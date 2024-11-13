@@ -24,7 +24,9 @@ bool inicializar_Allegro() {
 		fprintf(stderr, "Falha ao instalar keyboard.\n");
 		return false;
 	}
-
+	
+	if (!al_init_video_addon()) { 
+		fprintf(stderr, "Falha ao inicializar o addon de vídeo.\n"); return -1; }
 	al_reserve_samples(1);
 	if (!al_reserve_samples(1)) {
 		fprintf(stderr, "Falha ao reservar amostra de áudío.\n");
@@ -36,7 +38,7 @@ bool inicializar_Allegro() {
 typedef struct {
 	ALLEGRO_BITMAP* walkright; ALLEGRO_BITMAP* walkleft; ALLEGRO_BITMAP* jump_image; ALLEGRO_BITMAP* idle_right; ALLEGRO_BITMAP* idle_left;
 	ALLEGRO_BITMAP* shot_image_right; ALLEGRO_BITMAP* shot_image_left; ALLEGRO_BITMAP* pegar_image; ALLEGRO_BITMAP* bullet_right; ALLEGRO_BITMAP* bullet_left;
-	ALLEGRO_SAMPLE* tiro;
+	ALLEGRO_SAMPLE* tiro; ALLEGRO_BITMAP* pause; ALLEGRO_BITMAP* engrenagem;
    }Recursos;
 
 bool carregar_recursos(Recursos* recursos) {
@@ -51,9 +53,11 @@ bool carregar_recursos(Recursos* recursos) {
 	recursos->bullet_right = al_load_bitmap("./soldiersprites1/teste/bullet_right.png");
 	recursos->bullet_left = al_load_bitmap("soldiersprites1/teste/bullet_left.png");
 	recursos ->tiro = al_load_sample("./Audios/metralhadora.mp3");
+	recursos->pause= al_load_bitmap("./backgrounds/pause.png");
+
 
 	if (!recursos->walkright || !recursos->walkleft || !recursos->jump_image || !recursos->idle_right || !recursos->idle_left || !recursos->shot_image_right ||
-		!recursos->shot_image_left || !recursos->pegar_image || !recursos->bullet_right || !recursos->bullet_left || !recursos->tiro) {
+		!recursos->shot_image_left || !recursos->pegar_image || !recursos->bullet_right || !recursos->bullet_left || !recursos->tiro || !recursos->pause) {
 		return false;
 	}
 	return true;
@@ -72,6 +76,7 @@ void liberar_recursos(Recursos* recursos) {
 	if(recursos->bullet_right)al_destroy_bitmap(recursos->bullet_right);
 	if(recursos->bullet_left)al_destroy_bitmap(recursos->bullet_left);
 	if(recursos->tiro)al_destroy_sample(recursos->tiro);
+	if (recursos->pause)al_destroy_bitmap(recursos->pause);
 }
 
 typedef struct {
@@ -83,6 +88,7 @@ typedef struct {
 	float tempo_animacao, tempo_animacao2, tempo_control_finished;
 	int max_frame, max_frame2;
     bool inicializado, bala_ativa;
+	bool paused;
 }Variaveis;
 
 void Iniciar_variaveis(Variaveis* variaveis) {
@@ -95,6 +101,7 @@ void Iniciar_variaveis(Variaveis* variaveis) {
 	variaveis->tempo_animacao = 0.0, variaveis->tempo_animacao2 = 0.0, variaveis->tempo_control_finished = 0.0;
 	variaveis->max_frame = 7, variaveis->max_frame2 = 4;
 	variaveis->inicializado = false, variaveis->bala_ativa = false;
+	variaveis->paused = false;
 }
 
 static int tela4() {
@@ -238,10 +245,20 @@ static int tela4() {
 				al_play_sample(recursos.tiro, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
 			}
 			break;
+		case ALLEGRO_KEY_ESCAPE:
+			variaveis.paused = !variaveis.paused;
+			break;
 		}
+		
 
 		if (event.type == ALLEGRO_EVENT_TIMER) {
-
+			if (variaveis.paused) {
+				al_clear_to_color(al_map_rgb(0, 0, 0));
+				al_draw_bitmap(recursos.pause, 0, 0, 0);
+				al_flip_display();
+			return;
+			}
+			
 			variaveis.tempo_animacao += 1.0 / FPS;
 
 			if (variaveis.tempo_animacao >= variaveis.frame_rate) {
@@ -1047,6 +1064,8 @@ static int tela1() {
 	int TRONCO_X_MIN = 320;
 	int TRONCO_X_MAX = 350;
 	int troncoX = 400;
+	float tempo_pausa = 0.0f;
+	float DURACAO_PAUSA = 3.0f;
 	bool troncoVivo = true, shot_control = false;
 	typedef enum { WALKING_RIGHT, WALKING_LEFT, WALKING_SHOT_RIGHT, WALKING_SHOT_LEFT, JUMPING, IDLE_LEFT, IDLE_RIGHT, PEGAR
 	}characterState;
@@ -1061,7 +1080,7 @@ static int tela1() {
 		if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
 			break;
 		}
-		else if (event.keyboard.keycode == ALLEGRO_KEY_ESCAPE) { return false; }
+		//else if (event.keyboard.keycode == ALLEGRO_KEY_ESCAPE) { return false; }
 
 		else if (event.keyboard.keycode == ALLEGRO_KEY_SPACE) {
 			variaveis.pulo = 1;
@@ -1083,6 +1102,7 @@ static int tela1() {
 				else jump_state = WALKING_RIGHT;
 			}
 		}
+		
 
 		if (variaveis.pos_x + 75 > 320 && variaveis.pos_x < 350 && variaveis.pos_y + 128 > variaveis.pos_y && variaveis.pos_y < variaveis.pos_y + 100) {
 			al_draw_text(font, al_map_rgb(0, 0, 0), 640, 360, ALLEGRO_ALIGN_CENTER, "Teste");
@@ -1124,9 +1144,26 @@ static int tela1() {
 				al_play_sample(tiro, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
 			}
 			break;
+		case ALLEGRO_KEY_ESCAPE:
+			variaveis.paused = !variaveis.paused;
+			tempo_pausa = 0.0f;
+			break;
 		}
-		if (event.type == ALLEGRO_EVENT_TIMER) {
+		if (variaveis.paused) {
+			tempo_pausa += 1.0f / FPS;
+			// Desenha a tela de pausa
+			al_draw_bitmap(recursos.pause, 0, 0, 0);
+			if (tempo_pausa >= DURACAO_PAUSA) {
+				variaveis.paused = false;  // Retorna ao jogo
+				tempo_pausa = 0.0f;  // Reseta o contador de tempo
+			}
+			// Não atualiza a animação ou movimentação enquanto estiver pausado
+			return;  // Interrompe a execução da função, mantendo o jogo pausado
+		}
+		
 
+		if (event.type == ALLEGRO_EVENT_TIMER) {
+			
 			variaveis.tempo_animacao += 1.0 / FPS;
 
 			if (variaveis.tempo_animacao >= variaveis.frame_rate) {
@@ -1281,8 +1318,10 @@ static int menu() {
 	ALLEGRO_BITMAP* menu_teclas = al_load_bitmap("./backgrounds/fundo-teclas.png");
 	ALLEGRO_BITMAP* menu_creditos = al_load_bitmap("./backgrounds/fundo-creditos.png");
 	ALLEGRO_BITMAP* botao_voltar = al_load_bitmap("./backgrounds/botao-voltar.png");
+	ALLEGRO_BITMAP* creditos = al_load_bitmap("./backgrounds/creditos.png");
 	//ALLEGRO_FONT* font = al_create_builtin_font();
-	ALLEGRO_FONT* font_realista = al_load_font("./fonte/airstrike.ttf", 40, 0);
+	ALLEGRO_FONT* font_realista = al_load_font("./fonte/Seagram.ttf", 28, 0);
+	ALLEGRO_FONT* font_nome_jogo = al_load_font("./fonte/Gimme.ttf", 30, 0);
 	ALLEGRO_TIMER* timer = al_create_timer(1.0 / FPS);
 	//FILAS DE EVENTOS
 	ALLEGRO_EVENT_QUEUE* event_queue = al_create_event_queue();
@@ -1302,16 +1341,18 @@ static int menu() {
 		//Background menu
 		al_draw_bitmap(menu_image, 0, 0, 0);
 		//Opções
-		al_draw_bitmap(menu_opcoes_image, 450, 80, 0);
+		al_draw_bitmap(menu_opcoes_image, 450, 150, 0);
 
 		ALLEGRO_EVENT event;
 		al_wait_for_event(event_queue, &event);
-		ALLEGRO_COLOR cor_padrao = al_map_rgb(255, 255, 255);
-		ALLEGRO_COLOR cor_selecionada = al_map_rgb(000, 000, 000);
+		ALLEGRO_COLOR cor_padrao = al_map_rgb(41, 43, 43);
+		ALLEGRO_COLOR cor_selecionada = al_map_rgb(215, 219, 218);
+		ALLEGRO_COLOR credito = al_map_rgb(215, 219, 218);
 
-		al_draw_text(font_realista, controlador == 3 ? cor_selecionada : cor_padrao, 630, 206, ALLEGRO_ALIGN_CENTER, "JOGAR");
-		al_draw_text(font_realista, controlador == 2 ? cor_selecionada : cor_padrao, 635, 350, ALLEGRO_ALIGN_CENTER, "TECLAS");
-		al_draw_text(font_realista, controlador == 1 ? cor_selecionada : cor_padrao, 630, 497, ALLEGRO_ALIGN_CENTER, "CREDITOS");
+		al_draw_text(font_nome_jogo, al_map_rgb(232, 237, 236), 620, 100, ALLEGRO_ALIGN_CENTER, "QUANTIC SOLDIER");
+		al_draw_text(font_realista, controlador == 3 ? cor_padrao : cor_selecionada, 635, 285, ALLEGRO_ALIGN_CENTER, "JOGAR");
+		al_draw_text(font_realista, controlador == 2 ? cor_padrao : cor_selecionada, 634, 430, ALLEGRO_ALIGN_CENTER, "TECLAS");
+		al_draw_text(font_realista, controlador == 1 ? cor_padrao: cor_selecionada, 630, 576, ALLEGRO_ALIGN_CENTER, "CREDITOS");
 		if (event.type == ALLEGRO_EVENT_KEY_DOWN) {
 			if (event.keyboard.keycode == ALLEGRO_KEY_UP) {
 				controlador++;
@@ -1334,19 +1375,16 @@ static int menu() {
 			}
 		} else if (estado_menu == 1) {
 			al_draw_bitmap(menu_teclas, 0, 0, 0);
-			al_draw_bitmap(botao_voltar, 980, 600, 0);
 			al_draw_text(font_realista,  cor_padrao, 630, 30, ALLEGRO_ALIGN_CENTER, "TECLAS");
-			al_draw_text(font_realista, cor_padrao, 1090, 620, ALLEGRO_ALIGN_CENTER, "VOLTAR");
 
-			if (event.type == ALLEGRO_EVENT_KEY_DOWN && event.keyboard.keycode == ALLEGRO_KEY_ESCAPE) {
+			if ( event.keyboard.keycode == ALLEGRO_KEY_ESCAPE) {
 				estado_menu = 0;
 			}
 		} else if (estado_menu == 2) {
 			al_draw_bitmap(menu_creditos, 0, 0, 0); 
-			al_draw_bitmap(botao_voltar, 980, 600, 0);
+			//al_draw_text(creditos,credido, 500, 300, 0);
 			al_draw_text(font_realista, cor_padrao, 610, 30, ALLEGRO_ALIGN_CENTER, "CREDITOS");
-			al_draw_text(font_realista, cor_padrao, 1090, 620, ALLEGRO_ALIGN_CENTER, "VOLTAR");
-			if (event.type == ALLEGRO_EVENT_KEY_DOWN && event.keyboard.keycode == ALLEGRO_KEY_ESCAPE) {
+			if ( event.keyboard.keycode == ALLEGRO_KEY_ESCAPE) {
 				estado_menu = 0;
 			}
 		}
