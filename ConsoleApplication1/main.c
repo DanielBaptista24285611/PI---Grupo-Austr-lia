@@ -38,7 +38,7 @@ bool inicializar_Allegro() {
 typedef struct {
 	ALLEGRO_BITMAP* walkright; ALLEGRO_BITMAP* walkleft; ALLEGRO_BITMAP* jump_image; ALLEGRO_BITMAP* idle_right; ALLEGRO_BITMAP* idle_left;
 	ALLEGRO_BITMAP* shot_image_right; ALLEGRO_BITMAP* shot_image_left; ALLEGRO_BITMAP* pegar_image; ALLEGRO_BITMAP* bullet_right; ALLEGRO_BITMAP* bullet_left;
-	ALLEGRO_SAMPLE* tiro; ALLEGRO_BITMAP* pause; ALLEGRO_BITMAP* engrenagem;
+	ALLEGRO_SAMPLE* tiro; ALLEGRO_BITMAP* pause; ALLEGRO_SAMPLE* bodyfall; ALLEGRO_SAMPLE* footsteps;
    }Recursos;
 
 bool carregar_recursos(Recursos* recursos) {
@@ -58,7 +58,8 @@ bool carregar_recursos(Recursos* recursos) {
 
 	if (!recursos->walkright || !recursos->walkleft || !recursos->jump_image || !recursos->idle_right || !recursos->idle_left || !recursos->shot_image_right ||
 		!recursos->shot_image_left || !recursos->pegar_image || !recursos->bullet_right || !recursos->bullet_left || !recursos->tiro || !recursos->pause) {
-		return false;
+		
+return false;
 	}
 	return true;
 }
@@ -207,12 +208,14 @@ static int tela4() {
 			variaveis.pos_x -= 5;
 			variaveis.moving_left = true;
 			variaveis.mov = true;
+			//al_play_sample(recursos.footsteps, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
 			break;
 		case ALLEGRO_KEY_RIGHT:
 			jump_state = WALKING_RIGHT;
 			variaveis.pos_x += 5;
 			variaveis.moving_left = false;
 			variaveis.mov = true;
+			//al_play_sample(recursos.footsteps, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
 			break;
 		case ALLEGRO_KEY_UP:
 			variaveis.moving_up = true;
@@ -284,6 +287,7 @@ static int tela4() {
 				}
 				tempo_animacao_enemy = 0.0f;
 			}
+
 			al_clear_to_color(al_map_rgb(255, 255, 255));
 			//Backgrounds
 			al_draw_bitmap(background_4, 0, 0, 0);
@@ -408,6 +412,7 @@ static int tela4() {
 	al_destroy_font(font);
 	al_destroy_display(display);
 	al_destroy_event_queue(event_queue);
+
 
 	return 0;
 }
@@ -712,6 +717,7 @@ static int tela2() {
 	//Entrada base
 	ALLEGRO_BITMAP* fundoporta = al_load_bitmap("./base/montanha.png");
 	ALLEGRO_BITMAP* porta = al_load_bitmap("./base/porta.png");
+	ALLEGRO_BITMAP* holograma = al_load_bitmap("./backgrounds/holograma.jpg");
 	//FILAS DE EVENTOS
 	ALLEGRO_EVENT_QUEUE* event_queue = al_create_event_queue();
 	al_register_event_source(event_queue, al_get_display_event_source(display));
@@ -837,10 +843,6 @@ static int tela2() {
 				al_play_sample(recursos.tiro, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
 			}
 			break;
-		case ALLEGRO_KEY_R:
-			if (variaveis.pos_x > 1000) { tela3();
-			}
-			break;
 		}
 		if (event.type == ALLEGRO_EVENT_TIMER) {
 
@@ -904,6 +906,7 @@ static int tela2() {
 			default:
 				break;
 			}
+			
 
 			switch (jump_state) {
 			case WALKING_RIGHT: al_draw_bitmap_region(recursos.walkright, 256 * (int)variaveis.frame7px, variaveis.current_frame_y, 256, 256, variaveis.pos_x, variaveis.pos_y, 0);
@@ -944,6 +947,10 @@ static int tela2() {
 				}
 			}
 			variaveis.mov = false;
+		}
+		if (variaveis.pos_x > 1000) {
+			//tela3();
+			al_draw_bitmap(holograma, 0, 0, 0);
 		}
 
 		if (variaveis.atirando) {
@@ -1038,6 +1045,11 @@ static int tela1() {
 	//Inimigos
 	ALLEGRO_BITMAP* drone = al_load_bitmap("./inimigos/drone.png");
 	ALLEGRO_SAMPLE* tiro = al_load_sample("./Audios/metralhadora.wav");
+	//FONTE
+	ALLEGRO_FONT* font_realista = al_load_font("./fonte/Seagram.ttf", 28, 0);
+	ALLEGRO_COLOR cor_padrao = al_map_rgb(41, 43, 43);
+	ALLEGRO_COLOR  cor_selecionada= al_map_rgb(215, 219, 218);
+	
 	//FILAS DE EVENTOS
 	ALLEGRO_EVENT_QUEUE* event_queue = al_create_event_queue();
 	al_register_event_source(event_queue, al_get_display_event_source(display1));
@@ -1071,8 +1083,9 @@ static int tela1() {
 	}characterState;
 
 	characterState jump_state = IDLE_RIGHT; //Manter estado atual
+	bool exit_game = false;
 
-	while (true) {
+	while (!exit_game) {
 
 		ALLEGRO_EVENT event;
 		al_wait_for_event(event_queue, &event);
@@ -1146,20 +1159,40 @@ static int tela1() {
 			break;
 		case ALLEGRO_KEY_ESCAPE:
 			variaveis.paused = !variaveis.paused;
-			tempo_pausa = 0.0f;
 			break;
 		}
+		int controlador = 1;
 		if (variaveis.paused) {
-			tempo_pausa += 1.0f / FPS;
-			// Desenha a tela de pausa
-			al_draw_bitmap(recursos.pause, 0, 0, 0);
-			if (tempo_pausa >= DURACAO_PAUSA) {
-				variaveis.paused = false;  // Retorna ao jogo
-				tempo_pausa = 0.0f;  // Reseta o contador de tempo
-			}
-			// Não atualiza a animação ou movimentação enquanto estiver pausado
-			return;  // Interrompe a execução da função, mantendo o jogo pausado
+
+			al_draw_bitmap(recursos.pause, 210, 120, 0);
+			al_draw_text(font_realista, cor_padrao, 630, 214, ALLEGRO_ALIGN_CENTER, "PAUSE");
+			al_draw_text(font_realista, controlador == 2 ? cor_padrao : cor_selecionada, 630, 323, ALLEGRO_ALIGN_CENTER, "CONTINUAR");
+			al_draw_text(font_realista, controlador == 1 ? cor_padrao : cor_selecionada, 630, 405, ALLEGRO_ALIGN_CENTER, "SAIR");
+
+			al_flip_display();
+			continue;
 		}
+		if (event.type == ALLEGRO_EVENT_KEY_DOWN) {
+			if (event.keyboard.keycode == ALLEGRO_KEY_UP) {
+				controlador++;
+				if (controlador == 2) {
+					controlador = 1;
+				}
+			}
+			else if (event.keyboard.keycode == ALLEGRO_KEY_DOWN) {
+				controlador--;
+				if (controlador ==1) {
+					controlador = 2;
+				}
+			}
+			else if (event.keyboard.keycode == ALLEGRO_KEY_ENTER) {
+				switch (controlador) {
+				case 2: tela1(); break;
+				case 1: menu();break;
+				}
+			}
+		}
+		
 		
 
 		if (event.type == ALLEGRO_EVENT_TIMER) {
