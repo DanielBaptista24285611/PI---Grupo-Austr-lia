@@ -81,7 +81,7 @@ void liberar_recursos(Recursos* recursos) {
 }
 
 typedef struct {
-	int posicao, pulo, velocy, velocup, plimit;
+	int posicao, pulo, velocy, velocup, plimit, countholo;
 	float frame7px, frame4px, pos_x, pos_y, soldier_height, soldier_width;
 	int current_frame_y;
 	bool moving_left , moving_up, moving_down , moving_right , mov , atirando, jump_control;
@@ -694,7 +694,8 @@ static int tela2() {
 	al_set_window_position(display, 200, 200);
 
 	//ALLEGRO_FONT* font = al_create_builtin_font();
-	ALLEGRO_FONT* font = al_load_font("./fonte/font.ttf", 60, 0);
+	ALLEGRO_FONT* font = al_load_font("./fonte/font.ttf", 25, 0);
+	ALLEGRO_FONT* font_realista = al_load_font("./fonte/Seagram.ttf", 28, 0);
 	ALLEGRO_TIMER* timer = al_create_timer(1.0 / FPS);;
 	//Backgrounds
 	ALLEGRO_BITMAP* background_2 = al_load_bitmap("./backgrounds/backgroundfloresta2.jpg");
@@ -714,10 +715,18 @@ static int tela2() {
 	ALLEGRO_BITMAP* Estilizacao_Ossos = al_load_bitmap("./Estilizacoes/EstOssos.png");
 	ALLEGRO_BITMAP* Rei = al_load_bitmap("./Estilizacoes/Rei_EstOssos.png");
 	ALLEGRO_BITMAP* ossinhos = al_load_bitmap("./Estilizacoes/Ossinhos.png");
+	ALLEGRO_BITMAP* Est_futurista = al_load_bitmap("./Estilizacoes/Est_futurista.png");
+	ALLEGRO_BITMAP* Est_futurista_remove = al_load_bitmap("./Estilizacoes/Est_futurista_remove.png");
+
 	//Entrada base
 	ALLEGRO_BITMAP* fundoporta = al_load_bitmap("./base/montanha.png");
 	ALLEGRO_BITMAP* porta = al_load_bitmap("./base/porta.png");
 	ALLEGRO_BITMAP* holograma = al_load_bitmap("./backgrounds/holograma.jpg");
+	ALLEGRO_BITMAP* hologramaexp = al_load_bitmap("./backgrounds/hologramaexp.jpg");
+	ALLEGRO_BITMAP* Robo = al_load_bitmap("./backgrounds/Robo.gif");
+
+
+
 	//FILAS DE EVENTOS
 	ALLEGRO_EVENT_QUEUE* event_queue = al_create_event_queue();
 	al_register_event_source(event_queue, al_get_display_event_source(display));
@@ -876,8 +885,6 @@ static int tela2() {
 			al_clear_to_color(al_map_rgb(255, 255, 255));
 			//Backgrounds
 			al_draw_bitmap(background_2, 0, 0, 0);
-			//Obstáculos
-			al_draw_bitmap(tronco3, troncoX, 516, 0);
 			//Entrada base
 			al_draw_bitmap(fundoporta, 780, 186, 0);
 			al_draw_bitmap(porta, 980, 340, 0);
@@ -948,10 +955,150 @@ static int tela2() {
 			}
 			variaveis.mov = false;
 		}
-		if (variaveis.pos_x > 1000) {
-			//tela3();
-			al_draw_bitmap(holograma, 0, 0, 0);
+		if (variaveis.pos_x > -50 && (event.keyboard.keycode == ALLEGRO_KEY_R)) {
+			variaveis.countholo = 1;
+
+			float largura_original = al_get_bitmap_width(holograma);
+			float altura_original = al_get_bitmap_height(holograma);
+
+			// Definindo o tamanho final da tela (1280x720)
+			float largura_tela = 1280.0f;
+			float altura_tela = 720.0f;
+
+			// Variáveis de escala
+			float escala_x = largura_tela / largura_original;   // Fator de escala na direção X
+			float escala_y = altura_tela / altura_original;     // Fator de escala na direção Y
+			float escala = 1.0f; // Escala inicial de 1.0 (tamanho original da imagem)
+
+			float tempo_inicial = al_get_time(); // Tempo inicial para controle de animação
+
+			// Controle de loop
+			bool abrindo = true;
+
+			int menu_frame_x = 0, menu_frame_y = 0, menu_pos_x = 0, menu_pos_y = 0, controlQuest = 1, Alternativa = 0;
+			// Loop principal
+			while (abrindo) {
+				// Controla o tempo de aumento da escala (1.5 segundos)
+
+				float tempo_decorrido = al_get_time() - tempo_inicial;
+
+				if (tempo_decorrido < 1.5) {
+					// A escala aumenta gradualmente até atingir o tamanho final em 1.5 segundos
+					escala = 1.0f + (escala_x - 1.0f) * (tempo_decorrido / 1.5f); // Crescimento suave
+				}
+				else {
+					escala = escala_x; // A escala final é o valor correspondente ao tamanho da tela
+				}
+
+				// Calcula a posição para centralizar a imagem escalada
+				float centro_x = (largura_tela - (largura_original * escala)) / 2; // Centraliza horizontalmente
+				float centro_y = (altura_tela - (altura_original * escala)) / 2; // Centraliza verticalmente
+
+				ALLEGRO_COLOR cor_padrao = al_map_rgb(41, 43, 43);
+				ALLEGRO_COLOR cor_selecionada = al_map_rgb(215, 219, 218);
+				ALLEGRO_COLOR Resposta = al_map_rgb(215, 219, 218);
+				//HOLOGRAMA
+				al_clear_to_color(al_map_rgb(0, 0, 0));
+				al_draw_scaled_bitmap(
+					holograma,
+					0, 0, // Coordenadas de origem na imagem
+					largura_original, altura_original, // Dimensões da imagem original
+					centro_x, centro_y, // Posição centralizada
+					largura_original* escala, altura_original* escala, // Dimensões escaladas
+					0 // Sem flags
+				);
+
+				al_draw_bitmap_region(Est_futurista_remove,150,200, 100, 100, 960, 460, 0);
+				al_draw_bitmap_region(Est_futurista_remove, 450, 120, 200, 110, 320, 300, 0);
+				al_draw_bitmap_region(Est_futurista_remove, 450, 120, 200, 110, 550, 300, 0);
+				al_draw_bitmap_region(Est_futurista_remove, 450, 120, 200, 110, 780, 300, 0);
+				al_draw_bitmap_region(Est_futurista_remove, 450, 120, 200, 110, 540, 180, 0);
+				al_draw_text(font, al_map_rgb(255, 255, 255), 630, 450, ALLEGRO_ALIGN_CENTER, "Parar abrir, é necessário");
+				al_draw_text(font, al_map_rgb(255, 255, 255), 630, 480, ALLEGRO_ALIGN_CENTER, "desvendar o mistério!");
+
+				//QUESTÃO
+				al_draw_text(font, al_map_rgb(255, 255, 255), 620, 210, ALLEGRO_ALIGN_CENTER, "Log");
+				al_draw_text(font, al_map_rgb(255, 255, 255), 648, 224, ALLEGRO_ALIGN_CENTER, "6");
+				al_draw_text(font, al_map_rgb(255, 255, 255), 680, 212, ALLEGRO_ALIGN_CENTER, "36");
+
+
+				switch (event.keyboard.keycode) {
+					// Movimenta o controle para a direita
+				case ALLEGRO_KEY_RIGHT:
+						controlQuest++;
+						if (controlQuest > 3) {
+							controlQuest = 1; // Volta para o início
+						}
+						break;
+					// Movimenta o controle para a esquerda
+				case ALLEGRO_KEY_LEFT:
+						controlQuest--;
+						if (controlQuest < 1) {
+							controlQuest = 3; // Vai para o final
+						}
+						break;
+					// Seleciona a alternativa atual
+				case ALLEGRO_KEY_ENTER:
+						Alternativa = controlQuest;
+						break;
+					// Reseta a escolha ao pressionar ESC
+				case ALLEGRO_KEY_ESCAPE:
+						Alternativa = 0;
+						break;
+				}
+				switch (controlQuest) {
+				case 1:
+					al_draw_text(font_realista, cor_selecionada, 425, 340, ALLEGRO_ALIGN_CENTER, "5");
+					al_draw_text(font_realista,cor_padrao, 655, 340, ALLEGRO_ALIGN_CENTER, "6");
+					al_draw_text(font_realista, cor_padrao, 885, 340, ALLEGRO_ALIGN_CENTER, "2");
+					break;
+				case 2:
+					al_draw_text(font_realista, cor_padrao, 425, 340, ALLEGRO_ALIGN_CENTER, "5");
+					al_draw_text(font_realista, cor_selecionada, 655, 340, ALLEGRO_ALIGN_CENTER, "6");
+					al_draw_text(font_realista, cor_padrao, 885, 340, ALLEGRO_ALIGN_CENTER, "2");
+					break;
+				case 3:
+					al_draw_text(font_realista, cor_padrao, 425, 340, ALLEGRO_ALIGN_CENTER, "5");
+					al_draw_text(font_realista, cor_padrao, 655, 340, ALLEGRO_ALIGN_CENTER, "6");
+					al_draw_text(font_realista, cor_selecionada, 885, 340, ALLEGRO_ALIGN_CENTER, "2");
+					break;
+				}
+
+
+				// Mensagem de resultado com base na alternativa escolhida
+				if (Alternativa == 1) {
+					al_draw_text(font, al_map_rgb(255, 255, 255), 630, 40, ALLEGRO_ALIGN_CENTER, "Acesso concedido!");
+				}
+				else if (Alternativa == 2) {
+					al_draw_text(font, al_map_rgb(255, 255, 255), 630, 40, ALLEGRO_ALIGN_CENTER, "Acesso bloqueado!");
+				}
+				else if (Alternativa == 3) {
+					al_draw_text(font, al_map_rgb(255, 255, 255), 630, 40, ALLEGRO_ALIGN_CENTER, "Acesso bloqueado!");
+				}
+
+
+
+
+
+
+
+				//al_draw_bitmap(Robo, 500, 500,0);
+
+				// Atualiza o display
+				al_flip_display();
+
+
+				/*// Sai ao pressionar ESC
+				ALLEGRO_KEYBOARD_STATE key_state;
+				al_get_keyboard_state(&key_state);
+				if (al_key_down(&key_state, ALLEGRO_KEY_ESCAPE)) {
+					abrindo = false;
+				}*/
+			}
+
 		}
+
+
 
 		if (variaveis.atirando) {
 			// Inicializa a posição da bala apenas uma vez
@@ -997,6 +1144,10 @@ static int tela2() {
 	}
 	//Backgrounds
 	al_destroy_bitmap(background_2);
+	al_destroy_bitmap(fundoporta);
+	al_destroy_bitmap(porta);
+	al_destroy_bitmap(holograma);
+	al_destroy_bitmap(hologramaexp);
 	//ObstÃ¡culos
 	al_destroy_bitmap(tronco3);
 	//ConsumÃ­veis
@@ -1007,6 +1158,11 @@ static int tela2() {
 	al_destroy_bitmap(inimigoleft);
 	al_destroy_bitmap(generalright);
 	al_destroy_bitmap(generalleft);
+	//Estilizacao
+	al_destroy_bitmap(Estilizacao_Alien);
+	al_destroy_bitmap(Estilizacao_Ossos);
+	al_destroy_bitmap(ossinhos);
+	al_destroy_bitmap(Rei);
 	//destroi fonts,eventos e tela
 	al_destroy_font(font);
 	al_destroy_display(display);
@@ -1441,6 +1597,7 @@ static int menu() {
 }
 int main()
 {
-	menu();
+	tela2();
+	//menu();
 	return 0;
 }
