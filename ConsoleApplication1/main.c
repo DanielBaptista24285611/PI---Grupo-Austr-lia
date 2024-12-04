@@ -7,6 +7,8 @@
 #include <allegro5/allegro_acodec.h>
 #include <stdio.h>
 
+#define MAX_INIMIGO 9
+
 float FPS = 20.0;
 bool inicializar_Allegro() {
 	if (!al_init()) {
@@ -18,15 +20,16 @@ bool inicializar_Allegro() {
 		fprintf(stderr, "Falha ao inicializar  addon.\n");
 		return false;
 	}
-	
+
 	al_install_keyboard(); 	al_install_audio(); al_init_acodec_addon();
 	if (!al_install_keyboard() || !al_install_audio() || !al_init_acodec_addon()) {
 		fprintf(stderr, "Falha ao instalar keyboard.\n");
 		return false;
 	}
-	
-	if (!al_init_video_addon()) { 
-		fprintf(stderr, "Falha ao inicializar o addon de vídeo.\n"); return -1; }
+
+	if (!al_init_video_addon()) {
+		fprintf(stderr, "Falha ao inicializar o addon de vídeo.\n"); return -1;
+	}
 	al_reserve_samples(1);
 	if (!al_reserve_samples(1)) {
 		fprintf(stderr, "Falha ao reservar amostra de áudío.\n");
@@ -39,11 +42,11 @@ typedef struct {
 	ALLEGRO_BITMAP* walkright; ALLEGRO_BITMAP* walkleft; ALLEGRO_BITMAP* jump_image; ALLEGRO_BITMAP* idle_right; ALLEGRO_BITMAP* idle_left;
 	ALLEGRO_BITMAP* shot_image_right; ALLEGRO_BITMAP* shot_image_left; ALLEGRO_BITMAP* pegar_image; ALLEGRO_BITMAP* bullet_right; ALLEGRO_BITMAP* bullet_left;
 	ALLEGRO_SAMPLE* tiro; ALLEGRO_BITMAP* pause; ALLEGRO_SAMPLE* bodyfall; ALLEGRO_SAMPLE* footsteps;
-   }Recursos;
+}Recursos;
 
 bool carregar_recursos(Recursos* recursos) {
 	recursos->walkright = al_load_bitmap("./soldiersprites1/Soldier_1/walkright.png");
-	recursos-> walkleft = al_load_bitmap("./soldiersprites1/Soldier_1/walkleft.png");
+	recursos->walkleft = al_load_bitmap("./soldiersprites1/Soldier_1/walkleft.png");
 	recursos->jump_image = al_load_bitmap("./soldiersprites1/Soldier_1/jump.png");
 	recursos->idle_right = al_load_bitmap("./soldiersprites1/Soldier_1/idleRight.png");
 	recursos->idle_left = al_load_bitmap("./soldiersprites1/Soldier_1/idleLeft.png");
@@ -52,31 +55,31 @@ bool carregar_recursos(Recursos* recursos) {
 	recursos->pegar_image = al_load_bitmap("./soldiersprites2/soldier_2/rest.png");
 	recursos->bullet_right = al_load_bitmap("./soldiersprites1/teste/bullet_right.png");
 	recursos->bullet_left = al_load_bitmap("soldiersprites1/teste/bullet_left.png");
-	recursos ->tiro = al_load_sample("./Audios/metralhadora.mp3");
-	recursos->pause= al_load_bitmap("./backgrounds/pause.png");
+	recursos->tiro = al_load_sample("./Audios/metralhadora.mp3");
+	recursos->pause = al_load_bitmap("./backgrounds/pause.png");
 
 
 	if (!recursos->walkright || !recursos->walkleft || !recursos->jump_image || !recursos->idle_right || !recursos->idle_left || !recursos->shot_image_right ||
 		!recursos->shot_image_left || !recursos->pegar_image || !recursos->bullet_right || !recursos->bullet_left || !recursos->tiro || !recursos->pause) {
-		
-return false;
+
+		return false;
 	}
 	return true;
 }
 
 void liberar_recursos(Recursos* recursos) {
-	
-	if(recursos->walkright)al_destroy_bitmap(recursos->walkright);
-	if(recursos->walkleft)al_destroy_bitmap(recursos->walkleft);
-	if(recursos->idle_right)al_destroy_bitmap(recursos->idle_right);
-	if(recursos->idle_left)al_destroy_bitmap(recursos->idle_left);
-	if(recursos->shot_image_right)al_destroy_bitmap(recursos->shot_image_right);
-	if(recursos->shot_image_left)al_destroy_bitmap(recursos->shot_image_left);
-	if(recursos->jump_image)al_destroy_bitmap(recursos->jump_image);
-	if(recursos->pegar_image)al_destroy_bitmap(recursos->pegar_image);
-	if(recursos->bullet_right)al_destroy_bitmap(recursos->bullet_right);
-	if(recursos->bullet_left)al_destroy_bitmap(recursos->bullet_left);
-	if(recursos->tiro)al_destroy_sample(recursos->tiro);
+
+	if (recursos->walkright)al_destroy_bitmap(recursos->walkright);
+	if (recursos->walkleft)al_destroy_bitmap(recursos->walkleft);
+	if (recursos->idle_right)al_destroy_bitmap(recursos->idle_right);
+	if (recursos->idle_left)al_destroy_bitmap(recursos->idle_left);
+	if (recursos->shot_image_right)al_destroy_bitmap(recursos->shot_image_right);
+	if (recursos->shot_image_left)al_destroy_bitmap(recursos->shot_image_left);
+	if (recursos->jump_image)al_destroy_bitmap(recursos->jump_image);
+	if (recursos->pegar_image)al_destroy_bitmap(recursos->pegar_image);
+	if (recursos->bullet_right)al_destroy_bitmap(recursos->bullet_right);
+	if (recursos->bullet_left)al_destroy_bitmap(recursos->bullet_left);
+	if (recursos->tiro)al_destroy_sample(recursos->tiro);
 	if (recursos->pause)al_destroy_bitmap(recursos->pause);
 }
 
@@ -84,11 +87,11 @@ typedef struct {
 	int posicao, pulo, velocy, velocup, plimit, countholo;
 	float frame7px, frame4px, pos_x, pos_y, soldier_height, soldier_width;
 	int current_frame_y;
-	bool moving_left , moving_up, moving_down , moving_right , mov , atirando, jump_control;
+	bool moving_left, moving_up, moving_down, moving_right, mov, atirando, jump_control;
 	float pos_x_bullet, frame_rate, tempo_limite;
 	float tempo_animacao, tempo_animacao2, tempo_control_finished;
 	int max_frame, max_frame2;
-    bool inicializado, bala_ativa;
+	bool inicializado, bala_ativa, pulando, erro;
 	bool paused;
 }Variaveis;
 
@@ -101,10 +104,100 @@ void Iniciar_variaveis(Variaveis* variaveis) {
 	variaveis->frame_rate = 0.15f, variaveis->tempo_limite = 5.0f;
 	variaveis->tempo_animacao = 0.0, variaveis->tempo_animacao2 = 0.0, variaveis->tempo_control_finished = 0.0;
 	variaveis->max_frame = 7, variaveis->max_frame2 = 4;
-	variaveis->inicializado = false, variaveis->bala_ativa = false;
-	variaveis->paused = false;
+	variaveis->inicializado = false, variaveis->bala_ativa = false, variaveis->pulando = false;
+	variaveis->paused = false, variaveis->erro = false;
 }
 
+int controlLife = 1;
+
+void Interface_tela(bool error, ALLEGRO_BITMAP* barra_vida, int controlLife, ALLEGRO_BITMAP* est_interface, ALLEGRO_BITMAP* municao, ALLEGRO_BITMAP* sprite_arma, ALLEGRO_BITMAP* died) {
+	ALLEGRO_COLOR transparencia = al_map_rgba(255, 255, 255, 128);
+	if (error == false) {
+		Variaveis variaveis;
+		Iniciar_variaveis(&variaveis);
+
+		al_draw_bitmap_region(est_interface, 160, 0, 270, 63, 330, 17, 0);
+		al_draw_bitmap_region(est_interface, 265, 270, 160, 80, 0, 650, 0);
+		al_draw_bitmap_region(municao, 100, 20, 120, 50, 390, 27, 0);
+		al_draw_bitmap(sprite_arma, 30, 640, 0);
+		al_draw_bitmap_region(barra_vida, 0, 0, 300, 55, 20, 30, 0);
+		return;
+	}
+	else if (error == true) {
+		switch (controlLife)
+		{
+		case 2:
+
+			al_draw_bitmap_region(est_interface, 160, 0, 270, 63, 330, 17, 0);
+			al_draw_bitmap_region(est_interface, 265, 270, 160, 80, 0, 650, 0);
+			al_draw_bitmap_region(municao, 100, 20, 120, 50, 390, 27, 0);
+			al_draw_bitmap(sprite_arma, 30, 640, 0);
+			al_draw_bitmap_region(barra_vida, 0, 60, 300, 60, 20, 30, 0);
+			return;
+			break;
+		case 3:
+			al_draw_bitmap_region(est_interface, 160, 0, 270, 63, 330, 17, 0);
+			al_draw_bitmap_region(est_interface, 265, 270, 160, 80, 0, 650, 0);
+			al_draw_bitmap_region(municao, 100, 20, 120, 50, 390, 27, 0);
+			al_draw_bitmap(sprite_arma, 30, 640, 0);
+			al_draw_bitmap_region(barra_vida, 0, 130, 300, 55, 20, 30, 0);
+			return;
+			break;
+		case 4:
+
+			al_draw_bitmap_region(est_interface, 160, 0, 270, 63, 330, 17, 0);
+			al_draw_bitmap_region(est_interface, 265, 270, 160, 80, 0, 650, 0);
+			al_draw_bitmap_region(municao, 100, 20, 120, 50, 390, 27, 0);
+			al_draw_bitmap(sprite_arma, 30, 640, 0);
+			al_draw_bitmap_region(barra_vida, 0, 190, 300, 65, 20, 30, 0);
+			return;
+			break;
+		case 5:
+			al_draw_bitmap_region(est_interface, 160, 0, 270, 63, 330, 17, 0);
+			al_draw_bitmap_region(est_interface, 265, 270, 160, 80, 0, 650, 0);
+			al_draw_bitmap_region(municao, 100, 20, 120, 50, 390, 27, 0);
+			al_draw_bitmap(sprite_arma, 30, 640, 0);
+			al_draw_bitmap_region(barra_vida, 0, 260, 300, 55, 20, 30, 0);
+			return;
+			break;
+		case 6:
+
+			al_draw_tinted_bitmap(died, transparencia, 0, 0, 0);
+			return;
+			break;
+		}
+	}
+
+	//Interface
+	al_destroy_bitmap(barra_vida);
+	al_destroy_bitmap(municao);
+	al_destroy_bitmap(est_interface);
+	al_destroy_bitmap(sprite_arma);
+	al_destroy_bitmap(died);
+}
+
+typedef struct {
+	int x, y, velocidade;
+	int pos_x, pos_y;
+	bool movendoDireita, Vivo;
+	int soldier_width, soldier_height;
+} inimig;
+void Iniciar_inimigos(inimig* inimigos) {
+	srand(time(NULL));
+	
+	int quantidade2 = MAX_INIMIGO;
+	for (int i = 0; i < quantidade2; i++) {
+
+		inimigos[i].x = rand() % 1200 + 50; // Posição inicial X aleatória	
+		inimigos[i].y = 600; // Posição  Y	
+		inimigos[i].velocidade = rand() % 3 + 1; // Velocidade aleatória entre 1 e 3	
+		inimigos[i].movendoDireita = rand() % 2; // Direção inicial aleatória	
+		inimigos[i].Vivo = true; // Inimigo começa vivo	
+	}
+
+	inimigos->pos_x = 100, inimigos->pos_y = 380, inimigos->soldier_width = 50, inimigos->soldier_height = 50;
+
+}
 static int tela4() {
 	al_init();
 
@@ -116,7 +209,7 @@ static int tela4() {
 		fprintf(stderr, "Fallha ao carregar bitmaps.");
 		return -1;
 	}
-		
+
 	ALLEGRO_DISPLAY* display = al_create_display(1280, 720);
 	al_set_window_position(display, 200, 200);
 
@@ -131,6 +224,20 @@ static int tela4() {
 	ALLEGRO_BITMAP* generalleft = al_load_bitmap("./inimigos/generalesquerda.png");
 	//Background
 	ALLEGRO_BITMAP* background_4 = al_load_bitmap("./base/sala_boss.jpg");
+	//Estilizações
+	ALLEGRO_BITMAP* Est_futurista = al_load_bitmap("./Estilizacoes/Est_futurista.png");
+	ALLEGRO_BITMAP* Est_futurista_remove = al_load_bitmap("./Estilizacoes/Est_futurista_remove.png");
+	ALLEGRO_BITMAP* assets_keys = al_load_bitmap("./Estilizacoes/assets_keys.png");
+	ALLEGRO_BITMAP* barra_vida = al_load_bitmap("./Estilizacoes/barra_vida.png");
+	ALLEGRO_BITMAP* municao = al_load_bitmap("./Estilizacoes/municao.png");
+	ALLEGRO_BITMAP* est_interface = al_load_bitmap("./Estilizacoes/interface.png");
+	ALLEGRO_BITMAP* sprite_arma = al_load_bitmap("./Estilizacoes/sprite_arma.png");
+	//Tela
+	ALLEGRO_BITMAP* died = al_load_bitmap("./backgrounds/died.png");
+	ALLEGRO_BITMAP* holograma = al_load_bitmap("./backgrounds/holograma.jpg");
+	ALLEGRO_BITMAP* hologramaexp = al_load_bitmap("./backgrounds/hologramaexp.jpg");
+	//FONT
+	ALLEGRO_FONT* font_realista = al_load_font("./fonte/Seagram.ttf", 28, 0);
 	//FILAS DE EVENTOS
 	ALLEGRO_EVENT_QUEUE* event_queue = al_create_event_queue();
 	al_register_event_source(event_queue, al_get_display_event_source(display));
@@ -147,25 +254,33 @@ static int tela4() {
 	Variaveis variaveis;
 	Iniciar_variaveis(&variaveis);
 
+	inimig inimigos[MAX_INIMIGO];
+	Iniciar_inimigos(&inimigos);
+
 	//VariÃ¡veis dos consumÃ­veis
 	int kitmedicoX = 600, kitmunicaoX = 680;
 
 	//VARIÁVEIS INIMIGO
 	float frameinimigo = 0.f;
-	int enemy_pos_x = 1200, enemy_pos_y = 600, enemy_velocity = 3; 
-	bool enemy_moving_right = true, enemy_alive = true; 
+	int enemy_pos_x = 1200, enemy_pos_y = 600, enemy_velocity = 3;
+	bool enemy_moving_right = true, enemy_alive = true;
+	bool running = true;
+	bool redraw = false;
 
 	//CONTROLE ESTADO DO ENEMY
-	typedef enum { INIMIGO_RIGHT, INIMIGO_LEFT
+	typedef enum {
+		INIMIGO_RIGHT, INIMIGO_LEFT
 	} enemyState;
 
 	enemyState current_enemy_state = INIMIGO_RIGHT;
-
+	int LIMITE_ESQUERDO = 5;
+	int LIMITE_DIREITO = 1100;
 	//TEMPORIZADOR PERSONAGEM ANDANDO!!
 	float tempo_animacao_enemy = 0.0;
 	int max_frame_enemy = 3;
 
-	typedef enum { WALKING_RIGHT, WALKING_LEFT, WALKING_SHOT_RIGHT, WALKING_SHOT_LEFT, JUMPING, IDLE_LEFT, IDLE_RIGHT, PEGAR
+	typedef enum {
+		WALKING_RIGHT, WALKING_LEFT, WALKING_SHOT_RIGHT, WALKING_SHOT_LEFT, JUMPING, IDLE_LEFT, IDLE_RIGHT, PEGAR
 	}characterState;
 
 	characterState jump_state = IDLE_RIGHT; //Manter estado atual
@@ -178,90 +293,108 @@ static int tela4() {
 		if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
 			break;
 		}
-		else if (event.keyboard.keycode == ALLEGRO_KEY_ESCAPE) { return false; }
 
-		else if (event.keyboard.keycode == ALLEGRO_KEY_SPACE) {
+		else if (event.keyboard.keycode == ALLEGRO_KEY_SPACE && !variaveis.pulando) {
+			if (event.keyboard.keycode == ALLEGRO_KEY_RIGHT) {
+				variaveis.pos_x += 10;
+			}
+			else if (event.keyboard.keycode == ALLEGRO_KEY_LEFT) {
+				variaveis.pos_x -= 10;
+				break;
+			}
 			variaveis.pulo = 1;
 			variaveis.velocy = -variaveis.velocup;
-			variaveis.plimit = variaveis.pos_y - 140; //altura do pulo
-			jump_state = JUMPING;
+			variaveis.plimit = variaveis.pos_y - 140; // Altura máxima do pulo
+			jump_state = JUMPING; // Prioriza o estado de pulo
+			variaveis.pulando = true;
 		}
 
+		// Lógica de pulo
 		else if (variaveis.pulo) {
+			switch (event.keyboard.keycode) {
+			case ALLEGRO_KEY_RIGHT:
+				variaveis.pos_x += 10;
+				break;
+			case ALLEGRO_KEY_LEFT:
+				variaveis.pos_x -= 10;
+				break;
+			}
 			variaveis.pos_y += variaveis.velocy;
 			variaveis.velocy += 1;
 
-			if (variaveis.pos_y >= 380) {
+
+			if (variaveis.pos_y >= 380) { // Retorna ao chão
 				variaveis.pos_y = 380;
 				variaveis.pulo = 0;
 				variaveis.velocy = 0;
-				variaveis.jump_control = false;
-				//Parar de pular ao encostar no chão
-				if (variaveis.moving_left) jump_state = WALKING_LEFT;
-				else jump_state = WALKING_RIGHT;
+				variaveis.pulando = false;
+
+				// Define o estado após o pulo com base no movimento
+				if (variaveis.moving_left) {
+					jump_state = WALKING_LEFT;
+				}
+				else {
+					jump_state = WALKING_RIGHT;
+				}
 			}
 		}
 
-		switch (event.keyboard.keycode) {
-		case ALLEGRO_KEY_LEFT:
-			jump_state = WALKING_LEFT;
-			variaveis.pos_x -= 5;
-			variaveis.moving_left = true;
-			variaveis.mov = true;
-			//al_play_sample(recursos.footsteps, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
-			break;
-		case ALLEGRO_KEY_RIGHT:
-			jump_state = WALKING_RIGHT;
-			variaveis.pos_x += 5;
-			variaveis.moving_left = false;
-			variaveis.mov = true;
-			//al_play_sample(recursos.footsteps, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
-			break;
-		case ALLEGRO_KEY_UP:
-			variaveis.moving_up = true;
-			variaveis.pos_y -= 5;
-			break;
-		case ALLEGRO_KEY_DOWN:
-			variaveis.moving_down = true;
-			variaveis.pos_y += 5;
-			break;
-		case ALLEGRO_KEY_V:
-			jump_state = PEGAR;
-			if (variaveis.pos_x > (kitmedicoX - 135) && variaveis.pos_x < (kitmedicoX - 70) && variaveis.pos_y + 128 > variaveis.pos_y && variaveis.pos_y < variaveis.pos_y + 100) {
-				kitmedicoX = -1000;
+		// Movimentação horizontal
+		if (!variaveis.pulando) { // Só muda estado se não estiver pulando
+			switch (event.keyboard.keycode) {
+			case ALLEGRO_KEY_LEFT:
+				if (variaveis.pos_x > LIMITE_ESQUERDO) {
+					jump_state = WALKING_LEFT;
+					variaveis.pos_x -= 5;
+					variaveis.moving_left = true;
+					variaveis.mov = true;
+				}
+				break;
+
+			case ALLEGRO_KEY_RIGHT:
+				if (variaveis.pos_x < LIMITE_DIREITO) {
+					jump_state = WALKING_RIGHT;
+					variaveis.pos_x += 5;
+					variaveis.moving_left = false;
+					variaveis.mov = true;
+				}
+				break;
+
+			case ALLEGRO_KEY_V:
+				jump_state = PEGAR;
+				if (variaveis.pos_x > 465 && variaveis.pos_x < 530 && variaveis.pos_y + 128 > variaveis.pos_y && variaveis.pos_y < variaveis.pos_y + 100) {
+					kitmedicoX = -1000;
+				}
+				else if (variaveis.pos_x > 560 && variaveis.pos_x < 670 && variaveis.pos_y + 128 > variaveis.pos_y && variaveis.pos_y < variaveis.pos_y + 100) {
+					kitmunicaoX = -1000;
+				}
+				break;
+
+			case ALLEGRO_KEY_B:
+				if (variaveis.moving_left) {
+					jump_state = WALKING_SHOT_LEFT;
+					variaveis.atirando = true;
+					variaveis.pos_x_bullet = variaveis.pos_x - 160;
+					al_play_sample(recursos.tiro, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+				}
+				else {
+					jump_state = WALKING_SHOT_RIGHT;
+					variaveis.atirando = true;
+					variaveis.pos_x_bullet = variaveis.pos_x + 160;
+					al_play_sample(recursos.tiro, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+				}
+				break;
 			}
-			else if (variaveis.pos_x > (kitmunicaoX - 120) && variaveis.pos_x < (kitmunicaoX - 10) && variaveis.pos_y + 128 > variaveis.pos_y && variaveis.pos_y < variaveis.pos_y + 100) {
-				kitmunicaoX = -1000;
-			}
-			break;
-		case ALLEGRO_KEY_B:
-			if (variaveis.moving_left == true) {
-				jump_state = WALKING_SHOT_LEFT;
-				variaveis.atirando = true;
-				variaveis.pos_x_bullet = variaveis.pos_x - 160;
-				al_play_sample(recursos.tiro, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
-			}
-			else {
-				jump_state = WALKING_SHOT_RIGHT;
-				variaveis.atirando = true;
-				variaveis.pos_x_bullet = variaveis.pos_x + 160;
-				al_play_sample(recursos.tiro, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
-			}
-			break;
-		case ALLEGRO_KEY_ESCAPE:
-			variaveis.paused = !variaveis.paused;
-			break;
 		}
-		
 
 		if (event.type == ALLEGRO_EVENT_TIMER) {
 			if (variaveis.paused) {
 				al_clear_to_color(al_map_rgb(0, 0, 0));
 				al_draw_bitmap(recursos.pause, 0, 0, 0);
 				al_flip_display();
-			return;
+				return;
 			}
-			
+
 			variaveis.tempo_animacao += 1.0 / FPS;
 
 			if (variaveis.tempo_animacao >= variaveis.frame_rate) {
@@ -292,6 +425,7 @@ static int tela4() {
 			//Backgrounds
 			al_draw_bitmap(background_4, 0, 0, 0);
 
+			Interface_tela(variaveis.erro, barra_vida, controlLife, est_interface, municao, sprite_arma, died);
 			switch (jump_state) {
 			case WALKING_RIGHT: al_draw_bitmap_region(recursos.walkright, 256 * (int)variaveis.frame7px, variaveis.current_frame_y, 256, 256, variaveis.pos_x, variaveis.pos_y, 0);
 				break;
@@ -305,10 +439,12 @@ static int tela4() {
 			case WALKING_SHOT_LEFT: al_draw_bitmap_region(recursos.shot_image_left, 256 * (int)variaveis.frame4px, variaveis.current_frame_y, 256, 256, variaveis.pos_x, variaveis.pos_y, 0);
 				break;
 
-			case JUMPING:if (variaveis.moving_left) { al_draw_bitmap_region(recursos.jump_image, 256 * (int)variaveis.frame7px, variaveis.current_frame_y, 256, 256, variaveis.pos_x, variaveis.pos_y, ALLEGRO_FLIP_HORIZONTAL);
+			case JUMPING:if (variaveis.moving_left) {
+				al_draw_bitmap_region(recursos.jump_image, 256 * (int)variaveis.frame7px, variaveis.current_frame_y, 256, 256, variaveis.pos_x, variaveis.pos_y, ALLEGRO_FLIP_HORIZONTAL);
 				//Inverter imagem do pulo
 			}
-						else { al_draw_bitmap_region(recursos.jump_image, 256 * (int)variaveis.frame7px, variaveis.current_frame_y, 256, 256, variaveis.pos_x, variaveis.pos_y, 0);
+						else {
+				al_draw_bitmap_region(recursos.jump_image, 256 * (int)variaveis.frame7px, variaveis.current_frame_y, 256, 256, variaveis.pos_x, variaveis.pos_y, 0);
 			}
 						break;
 			case PEGAR:	al_draw_bitmap_region(recursos.pegar_image, 256 * (int)variaveis.frame4px, variaveis.current_frame_y, 256, 256, variaveis.pos_x, variaveis.pos_y, 0);
@@ -325,10 +461,10 @@ static int tela4() {
 			//Impede o mov de cancelar a animação de pulo, tiro e de pegar.
 			if (!(jump_state == WALKING_SHOT_LEFT) && !(jump_state == WALKING_SHOT_RIGHT) && !(jump_state == JUMPING) && !(jump_state == PEGAR)) {
 				if (variaveis.moving_left) { jump_state = IDLE_LEFT; }
-				else { jump_state = IDLE_RIGHT;	}
+				else { jump_state = IDLE_RIGHT; }
 			}
 			variaveis.mov = false;
-
+		
 			// Dentro do loop principal, na parte de colisão e atualização de estado
 			if (variaveis.pulo && variaveis.velocy > 0) { // Se o personagem está caindo
 				// Verificar se o personagem está em cima do inimigo
@@ -341,7 +477,39 @@ static int tela4() {
 					}
 				}
 			}
+			if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
+				running = false;
+			}
+			else if (event.type == ALLEGRO_EVENT_TIMER) {
+				redraw = true;
 
+				for (int i = 0; i < MAX_INIMIGO; i++) {
+					if (!inimigos[i].Vivo) continue;
+					if (inimigos[i].movendoDireita) {
+						inimigos[i].x += inimigos[i].velocidade;
+						if (inimigos[i].x > 1200) inimigos[i].movendoDireita = false;
+					}
+					else {
+						inimigos[i].x -= inimigos[i].velocidade;
+						if (inimigos[i].x < 0) inimigos[i].movendoDireita = true;
+					}
+				}
+			}
+			for (int i = 0; i < MAX_INIMIGO; i++) {
+				if (variaveis.pulo) {
+					if (inimigos[i].Vivo &&
+						variaveis.pos_x < inimigos[i].x + 50 && variaveis.pos_x + variaveis.soldier_width > inimigos[i].x &&
+						variaveis.pos_y < inimigos[i].y + 50 && variaveis.pos_y + variaveis.soldier_height > inimigos[i].y) {
+						inimigos[i].Vivo = false; // Elimina o inimigo ao colidir
+					}
+				}
+			}
+			for (int i = 0; i < MAX_INIMIGO; i++) {
+				if (inimigos[i].Vivo) {
+					al_draw_bitmap(inimigoright, inimigos[i].x, inimigos[i].y, 0);
+
+				}
+			}
 			// No código onde os inimigos são desenhados, adicionar uma condição para verificar se o inimigo está vivo
 			if (enemy_alive) {
 				if (enemy_moving_right) {
@@ -356,6 +524,7 @@ static int tela4() {
 					current_enemy_state = INIMIGO_LEFT;
 					if (enemy_pos_x < 0) { // Verifica se atingiu o limite esquerdo
 						enemy_moving_right = true; // Muda a direção para a direita
+				
 					}
 				}
 
@@ -378,7 +547,87 @@ static int tela4() {
 				}
 			}
 		}
+		float largura = 195.0;
 
+		if (variaveis.pos_x > -50 && (event.keyboard.keycode == ALLEGRO_KEY_ESCAPE)) {
+
+			variaveis.countholo = 1;
+
+			bool alternate = true;
+			int controlQuest2 = 1;
+
+			// Loop principal do menu de alternativas
+			while (alternate) {
+				ALLEGRO_EVENT evento;
+				al_wait_for_event(event_queue, &evento);
+
+				if (evento.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
+					alternate = false;
+					break;
+				}
+
+				if (evento.type == ALLEGRO_EVENT_KEY_DOWN) {
+					switch (evento.keyboard.keycode) {
+					case ALLEGRO_KEY_UP:
+						controlQuest2++;
+						if (controlQuest2 > 2) {
+							controlQuest2 = 1;
+							largura -= 460; // Reset para a posição inicial
+						}
+						else {
+							largura += 230; // Avança para a próxima posição
+						}
+						break;
+
+					case ALLEGRO_KEY_DOWN:
+						controlQuest2--;
+						if (controlQuest2 < 1) {
+							controlQuest2 = 2;
+							largura += 460; // Reset para a última posição
+						}
+						else {
+							largura -= 230; // Retorna à posição anterior
+						}
+						break;
+					case ALLEGRO_KEY_ENTER:
+						// Confirma a alternativa escolhida
+						alternate = false;
+						break;
+
+					}
+				}
+
+				ALLEGRO_COLOR cor_padrao = al_map_rgb(41, 43, 43);
+				ALLEGRO_COLOR cor_selecionada = al_map_rgb(215, 219, 218);
+
+				al_draw_bitmap(recursos.pause, 210, 120, 0);
+				al_draw_text(font_realista, cor_padrao, 630, 214, ALLEGRO_ALIGN_CENTER, "PAUSE");
+
+				// Mostra as alternativas com destaque para a selecionada
+				switch (controlQuest2) {
+				case 1:
+					al_draw_text(font_realista, cor_selecionada, 630, 323, ALLEGRO_ALIGN_CENTER, "CONTINUAR");
+					al_draw_text(font_realista, cor_padrao, 630, 405, ALLEGRO_ALIGN_CENTER, "SAIR");
+
+					break;
+				case 2:
+					al_draw_text(font_realista, cor_padrao, 630, 323, ALLEGRO_ALIGN_CENTER, "CONTINUAR");
+					al_draw_text(font_realista, cor_selecionada, 630, 405, ALLEGRO_ALIGN_CENTER, "SAIR");
+					break;
+				}
+
+				al_flip_display();
+			}
+			if (controlQuest2 == 2) {
+				menu();
+			}
+			else if (controlQuest2 == 1) {
+				return false;
+			}
+			al_flip_display();
+			al_rest(2.0);
+
+		}
 		if (variaveis.atirando) {
 			// Inicializa a posição da bala apenas uma vez
 			if (variaveis.inicializado == false) {
@@ -400,12 +649,12 @@ static int tela4() {
 		}
 		else { variaveis.inicializado = false; }
 
-		if (variaveis.pos_x_bullet > 1280) { variaveis.atirando = false;}
+		if (variaveis.pos_x_bullet > 1280) { variaveis.atirando = false; }
 		else if (variaveis.pos_x_bullet < 0) { variaveis.atirando = false; }
 
 		al_flip_display();
 	}
-	
+
 	//Backgrounds
 	al_destroy_bitmap(background_4);
 	//destroi fonts,eventos e tela
@@ -436,8 +685,24 @@ static int tela3() {
 	//Consumíveis
 	ALLEGRO_BITMAP* kitmedico = al_load_bitmap("./Consumiveis/Kitmedico1.png");
 	ALLEGRO_BITMAP* kitmunicao = al_load_bitmap("./consumiveis/kitmunicao1.png");
+	ALLEGRO_FONT* font_realista = al_load_font("./fonte/Seagram.ttf", 28, 0);
+	//INIMIGO
+	ALLEGRO_BITMAP* inimigo = al_load_bitmap("./inimigos/inimigodireita.png");
 	//Background
 	ALLEGRO_BITMAP* background_3 = al_load_bitmap("./backgrounds/fundo_base.jpg");
+
+	//Estilizações
+	ALLEGRO_BITMAP* Est_futurista = al_load_bitmap("./Estilizacoes/Est_futurista.png");
+	ALLEGRO_BITMAP* Est_futurista_remove = al_load_bitmap("./Estilizacoes/Est_futurista_remove.png");
+	ALLEGRO_BITMAP* assets_keys = al_load_bitmap("./Estilizacoes/assets_keys.png");
+	ALLEGRO_BITMAP* barra_vida = al_load_bitmap("./Estilizacoes/barra_vida.png");
+	ALLEGRO_BITMAP* municao = al_load_bitmap("./Estilizacoes/municao.png");
+	ALLEGRO_BITMAP* est_interface = al_load_bitmap("./Estilizacoes/interface.png");
+	ALLEGRO_BITMAP* sprite_arma = al_load_bitmap("./Estilizacoes/sprite_arma.png");
+	//Tela
+	ALLEGRO_BITMAP* died = al_load_bitmap("./backgrounds/died.png");
+	ALLEGRO_BITMAP* holograma = al_load_bitmap("./backgrounds/holograma.jpg");
+	ALLEGRO_BITMAP* hologramaexp = al_load_bitmap("./backgrounds/hologramaexp.jpg");
 	//FILAS DE EVENTOS
 	ALLEGRO_EVENT_QUEUE* event_queue = al_create_event_queue();
 	al_register_event_source(event_queue, al_get_display_event_source(display));
@@ -451,12 +716,21 @@ static int tela3() {
 	}
 	Variaveis variaveis;
 	Iniciar_variaveis(&variaveis);
-	
+
+	inimig inimigos[MAX_INIMIGO];
+	Iniciar_inimigos(&inimigos);
+
+	int LIMITE_ESQUERDO = 5;
+	int LIMITE_DIREITO = 1100;
+	bool running = true;
+	bool redraw = false;
+
 	//VariÃ¡veis dos consumÃ­veis
 	int kitmedicoX = 1080;
 	int kitmunicaoX = 1160;
 
-	typedef enum { WALKING_RIGHT, WALKING_LEFT, WALKING_SHOT_RIGHT, WALKING_SHOT_LEFT, JUMPING, IDLE_LEFT, IDLE_RIGHT, PEGAR
+	typedef enum {
+		WALKING_RIGHT, WALKING_LEFT, WALKING_SHOT_RIGHT, WALKING_SHOT_LEFT, JUMPING, IDLE_LEFT, IDLE_RIGHT, PEGAR
 	}characterState;
 
 	characterState jump_state = WALKING_RIGHT; //Manter estado atual
@@ -469,77 +743,102 @@ static int tela3() {
 		if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
 			break;
 		}
-		else if (event.keyboard.keycode == ALLEGRO_KEY_ESCAPE) { return false; }
 
-		else if (event.keyboard.keycode == ALLEGRO_KEY_SPACE) {
+		else if (event.keyboard.keycode == ALLEGRO_KEY_SPACE && !variaveis.pulando) {
+			if (event.keyboard.keycode == ALLEGRO_KEY_RIGHT) {
+				variaveis.pos_x += 10;
+			}
+			else if (event.keyboard.keycode == ALLEGRO_KEY_LEFT) {
+				variaveis.pos_x -= 10;
+				break;
+			}
 			variaveis.pulo = 1;
 			variaveis.velocy = -variaveis.velocup;
-			variaveis.plimit = variaveis.pos_y - 140; //altura do pulo
-			jump_state = JUMPING;
+			variaveis.plimit = variaveis.pos_y - 140; // Altura máxima do pulo
+			jump_state = JUMPING; // Prioriza o estado de pulo
+			variaveis.pulando = true;
 		}
 
+		// Lógica de pulo
 		else if (variaveis.pulo) {
+			switch (event.keyboard.keycode) {
+			case ALLEGRO_KEY_RIGHT:
+				variaveis.pos_x += 10;
+				break;
+			case ALLEGRO_KEY_LEFT:
+				variaveis.pos_x -= 10;
+				break;
+			}
 			variaveis.pos_y += variaveis.velocy;
 			variaveis.velocy += 1;
 
-			if (variaveis.pos_y >= 380) {
+
+			if (variaveis.pos_y >= 380) { // Retorna ao chão
 				variaveis.pos_y = 380;
 				variaveis.pulo = 0;
 				variaveis.velocy = 0;
-				//Parar de pular ao encostar no chão
-				if (variaveis.moving_left) jump_state = WALKING_LEFT;
-				else jump_state = WALKING_RIGHT;
+				variaveis.pulando = false;
+
+				// Define o estado após o pulo com base no movimento
+				if (variaveis.moving_left) {
+					jump_state = WALKING_LEFT;
+				}
+				else {
+					jump_state = WALKING_RIGHT;
+				}
+			}
+		}
+
+		// Movimentação horizontal
+		if (!variaveis.pulando) { // Só muda estado se não estiver pulando
+			switch (event.keyboard.keycode) {
+			case ALLEGRO_KEY_LEFT:
+				if (variaveis.pos_x > LIMITE_ESQUERDO) {
+					jump_state = WALKING_LEFT;
+					variaveis.pos_x -= 5;
+					variaveis.moving_left = true;
+					variaveis.mov = true;
+				}
+				break;
+
+			case ALLEGRO_KEY_RIGHT:
+				if (variaveis.pos_x < LIMITE_DIREITO) {
+					jump_state = WALKING_RIGHT;
+					variaveis.pos_x += 5;
+					variaveis.moving_left = false;
+					variaveis.mov = true;
+				}
+				break;
+
+			case ALLEGRO_KEY_V:
+				jump_state = PEGAR;
+				if (variaveis.pos_x > 465 && variaveis.pos_x < 530 && variaveis.pos_y + 128 > variaveis.pos_y && variaveis.pos_y < variaveis.pos_y + 100) {
+					kitmedicoX = -1000;
+				}
+				else if (variaveis.pos_x > 560 && variaveis.pos_x < 670 && variaveis.pos_y + 128 > variaveis.pos_y && variaveis.pos_y < variaveis.pos_y + 100) {
+					kitmunicaoX = -1000;
+				}
+				break;
+
+			case ALLEGRO_KEY_B:
+				if (variaveis.moving_left) {
+					jump_state = WALKING_SHOT_LEFT;
+					variaveis.atirando = true;
+					variaveis.pos_x_bullet = variaveis.pos_x - 160;
+					al_play_sample(recursos.tiro, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+				}
+				else {
+					jump_state = WALKING_SHOT_RIGHT;
+					variaveis.atirando = true;
+					variaveis.pos_x_bullet = variaveis.pos_x + 160;
+					al_play_sample(recursos.tiro, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+				}
+				break;
 			}
 		}
 
 		switch (event.keyboard.keycode) {
-		case ALLEGRO_KEY_LEFT:
-			jump_state = WALKING_LEFT;
-			variaveis.pos_x -= 5;
-			variaveis.moving_left = true;
-			variaveis.mov = true;
-			break;
-		case ALLEGRO_KEY_RIGHT:
-			jump_state = WALKING_RIGHT;
-			variaveis.pos_x += 5;
-			variaveis.moving_left = false;
-			variaveis.mov = true;
-			break;
-		case ALLEGRO_KEY_UP:
-			variaveis.moving_up = true;
-			variaveis.pos_y -= 5;
-			break;
-		case ALLEGRO_KEY_DOWN:
-			variaveis.moving_down = true;
-			variaveis.pos_y += 5;
-			break;
-		case ALLEGRO_KEY_V:
-			jump_state = PEGAR;
-			if (variaveis.pos_x > (kitmedicoX - 135) && variaveis.pos_x < (kitmedicoX - 70) && variaveis.pos_y + 128 > variaveis.pos_y && variaveis.pos_y < variaveis.pos_y + 100) {
-				kitmedicoX = -1000;
-			}
-			else if (variaveis.pos_x > (kitmunicaoX - 120) && variaveis.pos_x < (kitmunicaoX - 10) && variaveis.pos_y + 128 > variaveis.pos_y && variaveis.pos_y < variaveis.pos_y + 100) {
-				kitmunicaoX = -1000;
-			}
-			break;
-		case ALLEGRO_KEY_B:
-			if (variaveis.moving_left == true) {
-				jump_state = WALKING_SHOT_LEFT;
-				variaveis.atirando = true;
-				variaveis.pos_x_bullet = variaveis.pos_x - 160;
-				al_play_sample(recursos.tiro, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
-			}
-			else {
-				jump_state = WALKING_SHOT_RIGHT;
-				variaveis.atirando = true;
-				variaveis.pos_x_bullet = variaveis.pos_x + 160;
-				al_play_sample(recursos.tiro, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
-			}
-			break;
-		}
-
-		switch (event.keyboard.keycode) {
-		case ALLEGRO_KEY_LEFT: variaveis.moving_left = false;
+		case ALLEGRO_KEY_LEFT: variaveis.moving_left = true;
 			break;
 		case ALLEGRO_KEY_RIGHT: variaveis.moving_right = false;
 			break;
@@ -585,14 +884,17 @@ static int tela3() {
 					variaveis.frame4px = 0; // Reinicia o quadro de animação
 				}
 				variaveis.tempo_animacao2 = 0.0f;
+			
 			}
+		}
+		
 
 			al_clear_to_color(al_map_rgb(255, 255, 255));
 			//Backgrounds
 			al_draw_bitmap(background_3, 0, 0, 0);
 			//Consumíveis
-			al_draw_bitmap(kitmedico, kitmedicoX, 650, 0);
-			al_draw_bitmap(kitmunicao, kitmunicaoX, 650, 0);
+			al_draw_bitmap(kitmedico, kitmedicoX, 620, 0);
+			al_draw_bitmap(kitmunicao, kitmunicaoX, 620, 0);
 
 			switch (jump_state) {
 			case WALKING_RIGHT: al_draw_bitmap_region(recursos.walkright, 256 * (int)variaveis.frame7px, variaveis.current_frame_y, 256, 256, variaveis.pos_x, variaveis.pos_y, 0);
@@ -607,10 +909,12 @@ static int tela3() {
 			case WALKING_SHOT_LEFT: al_draw_bitmap_region(recursos.shot_image_left, 256 * (int)variaveis.frame4px, variaveis.current_frame_y, 256, 256, variaveis.pos_x, variaveis.pos_y, 0);
 				break;
 
-			case JUMPING:if (variaveis.moving_left) { al_draw_bitmap_region(recursos.jump_image, 256 * (int)variaveis.frame7px, variaveis.current_frame_y, 256, 256, variaveis.pos_x, variaveis.pos_y, ALLEGRO_FLIP_HORIZONTAL);
+			case JUMPING:if (variaveis.moving_left) {
+				al_draw_bitmap_region(recursos.jump_image, 256 * (int)variaveis.frame7px, variaveis.current_frame_y, 256, 256, variaveis.pos_x, variaveis.pos_y, ALLEGRO_FLIP_HORIZONTAL);
 				//Inverter imagem do pulo
 			}
-						else { al_draw_bitmap_region(recursos.jump_image, 256 * (int)variaveis.frame7px, variaveis.current_frame_y, 256, 256, variaveis.pos_x, variaveis.pos_y, 0);
+						else {
+				al_draw_bitmap_region(recursos.jump_image, 256 * (int)variaveis.frame7px, variaveis.current_frame_y, 256, 256, variaveis.pos_x, variaveis.pos_y, 0);
 			}
 						break;
 			case PEGAR: al_draw_bitmap_region(recursos.pegar_image, 256 * (int)variaveis.frame4px, variaveis.current_frame_y, 256, 256, variaveis.pos_x, variaveis.pos_y, 0);
@@ -634,43 +938,377 @@ static int tela3() {
 				}
 			}
 			variaveis.mov = false;
-		}
 
-		if (variaveis.atirando) {
-			// Inicializa a posição da bala apenas uma vez
-			if (variaveis.inicializado == false) {
-				variaveis.bala_ativa = true;
-				variaveis.inicializado = true;
+			if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
+				running = false;
 			}
-			// Desenha a bala e atualiza sua posição se estiver ativa
-			if (variaveis.bala_ativa) {
-				if (variaveis.moving_left == false) {
-					al_draw_bitmap(recursos.bullet_right, variaveis.pos_x_bullet, variaveis.pos_y + 167, 0);
-					variaveis.pos_x_bullet += 20.2f;
+			else if (event.type == ALLEGRO_EVENT_TIMER) {
+				redraw = true;
+
+				for (int i = 0; i < MAX_INIMIGO; i++) {
+					if (!inimigos[i].Vivo) continue;
+
+					if (inimigos[i].movendoDireita) {
+						inimigos[i].x += inimigos[i].velocidade;
+						if (inimigos[i].x > 1200) inimigos[i].movendoDireita = false;
+					}
+					else {
+						inimigos[i].x -= inimigos[i].velocidade;
+						if (inimigos[i].x < 0) inimigos[i].movendoDireita = true;
+					}
 				}
-				else {
-					al_draw_bitmap(recursos.bullet_left, variaveis.pos_x_bullet, variaveis.pos_y + 167, 0);
-					variaveis.pos_x_bullet -= 20.2f;
+			}
+			for (int i = 0; i < MAX_INIMIGO; i++) {
+				if (variaveis.pulo ) {
+					if (inimigos[i].Vivo &&
+						variaveis.pos_x < inimigos[i].x + 50 && variaveis.pos_x + variaveis.soldier_width > inimigos[i].x &&
+						variaveis.pos_y < inimigos[i].y + 50 && variaveis.pos_y + variaveis.soldier_height > inimigos[i].y) {
+						inimigos[i].Vivo = false; // Elimina o inimigo ao colidir
+					}
+				}
+			}
+				for (int i = 0; i < MAX_INIMIGO; i++) {
+					if (inimigos[i].Vivo) {
+						al_draw_bitmap(inimigo, inimigos[i].x, inimigos[i].y,0);
+
+					}
+				}
+			
+
+		float largura = 195.0;
+
+		if (variaveis.pos_x > -50 && (event.keyboard.keycode == ALLEGRO_KEY_ESCAPE)) {
+
+			variaveis.countholo = 1;
+
+			bool alternate = true;
+			int controlQuest2 = 1;
+
+			// Loop principal do menu de alternativas
+			while (alternate) {
+				ALLEGRO_EVENT evento;
+				al_wait_for_event(event_queue, &evento);
+
+				if (evento.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
+					alternate = false;
+					break;
+				}
+
+					if (evento.type == ALLEGRO_EVENT_KEY_DOWN) {
+						switch (evento.keyboard.keycode) {
+						case ALLEGRO_KEY_UP:
+							controlQuest2++;
+							if (controlQuest2 > 2) {
+								controlQuest2 = 1;
+								largura -= 460; // Reset para a posição inicial
+							}
+							else {
+								largura += 230; // Avança para a próxima posição
+							}
+							break;
+
+						case ALLEGRO_KEY_DOWN:
+							controlQuest2--;
+							if (controlQuest2 < 1) {
+								controlQuest2 = 2;
+								largura += 460; // Reset para a última posição
+							}
+							else {
+								largura -= 230; // Retorna à posição anterior
+							}
+							break;
+						case ALLEGRO_KEY_ENTER:
+							// Confirma a alternativa escolhida
+							alternate = false;
+							break;
+
+						}
+					}
+
+					ALLEGRO_COLOR cor_padrao = al_map_rgb(41, 43, 43);
+					ALLEGRO_COLOR cor_selecionada = al_map_rgb(215, 219, 218);
+
+					al_draw_bitmap(recursos.pause, 210, 120, 0);
+					al_draw_text(font_realista, cor_padrao, 630, 214, ALLEGRO_ALIGN_CENTER, "PAUSE");
+
+					// Mostra as alternativas com destaque para a selecionada
+					switch (controlQuest2) {
+					case 1:
+						al_draw_text(font_realista, cor_selecionada, 630, 323, ALLEGRO_ALIGN_CENTER, "CONTINUAR");
+						al_draw_text(font_realista, cor_padrao, 630, 405, ALLEGRO_ALIGN_CENTER, "SAIR");
+
+						break;
+					case 2:
+						al_draw_text(font_realista, cor_padrao, 630, 323, ALLEGRO_ALIGN_CENTER, "CONTINUAR");
+						al_draw_text(font_realista, cor_selecionada, 630, 405, ALLEGRO_ALIGN_CENTER, "SAIR");
+						break;
+					}
+
+					al_flip_display();
+			
+			if (controlQuest2 == 2) {
+				menu();
+			}
+			else if (controlQuest2 == 1) {
+				return false;
+			}
+			al_flip_display();
+			al_rest(2.0);
+
+		}
+			if (variaveis.pos_x > 634 && variaveis.pos_x < 950) {
+				al_draw_text(font, al_map_rgb(255, 255, 255), 890, 370, ALLEGRO_ALIGN_CENTER, "Press ");
+				al_draw_bitmap_region(assets_keys, 240, 110, 60, 40, 935, 367, 0);
+			}
+			Interface_tela(variaveis.erro, barra_vida, controlLife, est_interface, municao, sprite_arma, died);
+			if (variaveis.pos_x > 634 && (event.keyboard.keycode == ALLEGRO_KEY_R)) {
+				variaveis.countholo = 1;
+
+				float largura_original = al_get_bitmap_width(holograma);
+				float altura_original = al_get_bitmap_height(holograma);
+
+				// Definindo o tamanho final da tela (1280x720)
+				float largura_tela = 1280.0f;
+				float altura_tela = 720.0f;
+				float largura = 195.0;
+				int total_alternativas = 3;
+				int alternativa_selecionada = 0;
+
+				// Variáveis de escala
+				float escala_x = largura_tela / largura_original;   // Fator de escala na direção X
+				float escala_y = altura_tela / altura_original;     // Fator de escala na direção Y
+				float escala = 1.0f; // Escala inicial de 1.0 (tamanho original da imagem)
+
+				float tempo_inicial = al_get_time(); // Tempo inicial para controle de animação
+
+				// Controle de loop
+				bool abrindo = true;
+
+				int menu_frame_x = 0, menu_frame_y = 0, menu_pos_x = 0, menu_pos_y = 0, controlQuest = 1, Alternativa = 0;
+				// Loop principal
+				while (abrindo) {
+					// Controla o tempo de aumento da escala (1.5 segundos)
+
+					float tempo_decorrido = al_get_time() - tempo_inicial;
+
+					if (tempo_decorrido < 1.5) {
+						// A escala aumenta gradualmente até atingir o tamanho final em 1.5 segundos
+						escala = 1.0f + (escala_x - 1.0f) * (tempo_decorrido / 1.5f); // Crescimento suave
+					}
+					else {
+						escala = escala_x; // A escala final é o valor correspondente ao tamanho da tela
+					}
+					// Calcula a posição para centralizar a imagem escalada
+				float centro_x = (largura_tela - (largura_original * escala)) / 2; // Centraliza horizontalmente
+				float centro_y = (altura_tela - (altura_original * escala)) / 2; // Centraliza verticalmente
+
+				ALLEGRO_COLOR cor_padrao = al_map_rgb(41, 43, 43);
+				ALLEGRO_COLOR cor_selecionada = al_map_rgb(215, 219, 218);
+				ALLEGRO_COLOR Resposta = al_map_rgb(215, 219, 218);
+
+				bool alternate = true;
+
+				while (alternate) {
+					ALLEGRO_EVENT evento;
+					al_wait_for_event(event_queue, &evento);
+					//HOLOGRAMA
+					al_draw_scaled_bitmap(
+						holograma,
+						0, 0, // Coordenadas de origem na imagem
+						largura_original, altura_original, // Dimensões da imagem original
+						centro_x, centro_y, // Posição centralizada
+						largura_original* escala, altura_original* escala, // Dimensões escaladas
+						0 // Sem flags
+					);
+					if (evento.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
+						alternate = false;
+						break;
+					}
+					if (evento.type == ALLEGRO_EVENT_KEY_DOWN) {
+						switch (evento.keyboard.keycode) {
+						case ALLEGRO_KEY_RIGHT:
+							controlQuest++;
+							if (controlQuest > 3) {
+								controlQuest = 1;
+								largura -= 460; // Reset para a posição inicial
+							}
+							else {
+								largura += 230; // Avança para a próxima posição
+							}
+							break;
+
+						case ALLEGRO_KEY_LEFT:
+							controlQuest--;
+							if (controlQuest < 1) {
+								controlQuest = 3;
+								largura += 460; // Reset para a última posição
+							}
+							else {
+								largura -= 230; // Retorna à posição anterior
+							}
+							break;
+						case ALLEGRO_KEY_ENTER:
+							// Confirma a alternativa escolhida
+							alternate = false;
+							break;
+
+						case ALLEGRO_KEY_ESCAPE:
+							// Sai do menu sem escolher
+							alternate = false;
+							controlQuest = 0; // Nenhuma alternativa selecionada
+							break;
+						}
+					}
+					// Desenha o menu de alternativas
+					al_clear_to_color(al_map_rgb(0, 0, 0));
+
+					al_draw_scaled_bitmap(
+						holograma,
+						0, 0, // Coordenadas de origem na imagem
+						largura_original, altura_original, // Dimensões da imagem original
+						centro_x, centro_y, // Posição centralizada
+						largura_original* escala, altura_original* escala, // Dimensões escaladas
+						0 // Sem flags
+					);
+					al_draw_bitmap_region(Est_futurista_remove, 150, 200, 100, 100, 960, 460, 0);
+					al_draw_bitmap_region(Est_futurista_remove, 450, 120, 200, 110, 320, 300, 0);
+					al_draw_bitmap_region(Est_futurista_remove, 450, 120, 200, 110, 550, 300, 0);
+					al_draw_bitmap_region(Est_futurista_remove, 450, 120, 200, 110, 780, 300, 0);
+					al_draw_bitmap_region(Est_futurista_remove, 450, 120, 200, 110, 540, 180, 0);
+					al_draw_text(font, al_map_rgb(255, 255, 255), 630, 450, ALLEGRO_ALIGN_CENTER, "Parar abrir, é necessário");
+					al_draw_text(font, al_map_rgb(255, 255, 255), 630, 480, ALLEGRO_ALIGN_CENTER, "desvendar o mistério!");
+
+					//QUESTÃO
+					al_draw_text(font, al_map_rgb(255, 255, 255), 620, 210, ALLEGRO_ALIGN_CENTER, "Log");
+					al_draw_text(font, al_map_rgb(255, 255, 255), 648, 224, ALLEGRO_ALIGN_CENTER, "6");
+					al_draw_text(font, al_map_rgb(255, 255, 255), 680, 212, ALLEGRO_ALIGN_CENTER, "36");
+
+					// Mostra as alternativas com destaque para a selecionada
+					switch (controlQuest) {
+					case 1:
+						al_draw_text(font_realista, cor_selecionada, 425, 340, ALLEGRO_ALIGN_CENTER, "5");
+						al_draw_text(font_realista, cor_padrao, 655, 340, ALLEGRO_ALIGN_CENTER, "6");
+						al_draw_text(font_realista, cor_padrao, 885, 340, ALLEGRO_ALIGN_CENTER, "2");
+						break;
+					case 2:
+						al_draw_text(font_realista, cor_padrao, 425, 340, ALLEGRO_ALIGN_CENTER, "5");
+						al_draw_text(font_realista, cor_selecionada, 655, 340, ALLEGRO_ALIGN_CENTER, "6");
+						al_draw_text(font_realista, cor_padrao, 885, 340, ALLEGRO_ALIGN_CENTER, "2");
+						break;
+					case 3:
+						al_draw_text(font_realista, cor_padrao, 425, 340, ALLEGRO_ALIGN_CENTER, "5");
+						al_draw_text(font_realista, cor_padrao, 655, 340, ALLEGRO_ALIGN_CENTER, "6");
+						al_draw_text(font_realista, cor_selecionada, 885, 340, ALLEGRO_ALIGN_CENTER, "2");
+						break;
+					}
+
+					al_flip_display();
+
+				}
+				// Mostra o resultado da alternativa escolhida
+				al_clear_to_color(al_map_rgb(0, 0, 0));
+				if (!(controlLife == 5)) {
+					al_draw_scaled_bitmap(
+						holograma,
+						0, 0, // Coordenadas de origem na imagem
+						largura_original, altura_original, // Dimensões da imagem original
+						centro_x, centro_y, // Posição centralizada
+						largura_original * escala, altura_original * escala, // Dimensões escaladas
+						0 // Sem flags
+					);
+				}
+				if (controlQuest == 3) {
+					al_draw_scaled_bitmap(
+						holograma,
+						0, 0, // Coordenadas de origem na imagem
+						largura_original, altura_original, // Dimensões da imagem original
+						centro_x, centro_y, // Posição centralizada
+						largura_original * escala, altura_original * escala, // Dimensões escaladas
+						0 // Sem flags
+					);
+					al_draw_text(font, al_map_rgb(255, 255, 255), 630, 330, ALLEGRO_ALIGN_CENTER, "Acesso concedido!");
+
+					al_flip_display();
+					al_rest(2.0);
+				}
+				else if ((controlQuest == 1 || controlQuest == 2) && !(controlLife == 5)) {
+					al_draw_text(font, al_map_rgb(255, 255, 255), 630, 330, ALLEGRO_ALIGN_CENTER, "Acesso bloqueado!");
+				}
+				if (!(controlLife == 5)) {
+
+					al_flip_display();
+					al_rest(2.0);
+				}
+
+				if (controlQuest == 3) {
+					tela4();
+				}
+				if (!(controlLife == 6))
+				{
+					variaveis.erro = true;
+					controlLife++;
+					Interface_tela(variaveis.erro, barra_vida, controlLife, est_interface, municao, sprite_arma, died);
+					abrindo = false;
+				}
+				if (controlLife == 6) {
+					al_clear_to_color(al_map_rgb(255, 255, 255));
+					//Backgrounds
+					al_draw_bitmap(background_3, 0, 0, 0);
+					//Consumíveis
+					al_draw_bitmap(kitmedico, kitmedicoX, 650, 0);
+					al_draw_bitmap(kitmunicao, kitmunicaoX, 650, 0);
+					Interface_tela(variaveis.erro, barra_vida, controlLife, est_interface, municao, sprite_arma, died);
+					al_flip_display();
+					al_rest(3.0);
+					menu();
+				}
+				}
+			}
+			if (variaveis.atirando) {
+				// Inicializa a posição da bala apenas uma vez
+				if (variaveis.inicializado == false) {
+					variaveis.bala_ativa = true;
+					variaveis.inicializado = true;
+				}
+				// Desenha a bala e atualiza sua posição se estiver ativa
+				if (variaveis.bala_ativa) {
+					if (variaveis.moving_left == false) {
+						al_draw_bitmap(recursos.bullet_right, variaveis.pos_x_bullet, variaveis.pos_y + 167, 0);
+						variaveis.pos_x_bullet += 80.0f;
+					}
+					else {
+						al_draw_bitmap(recursos.bullet_left, variaveis.pos_x_bullet, variaveis.pos_y + 167, 0);
+						variaveis.pos_x_bullet -= 80.0f;
+					}
 				}
 			}
 		}
-		else { variaveis.inicializado = false; // Reseta quando não está atirando
+		else {
+			variaveis.inicializado = false; // Reseta quando não está atirando
 		}
 
-		if (variaveis.pos_x_bullet > 1280) {	variaveis.atirando = false;
+		if (variaveis.pos_x_bullet > 1280) {
+			variaveis.atirando = false;
 		}
-		else if (variaveis.pos_x_bullet < 0) { variaveis.atirando = false;
-		}
-		//MudanÃ§a de tela
-
-		if (variaveis.pos_x > 777) { tela4();
+		else if (variaveis.pos_x_bullet < 0) {
+			variaveis.atirando = false;
 		}
 
 		al_flip_display();
-	}	
-	
+	}
+
 	//Backgrounds
 	al_destroy_bitmap(background_3);
+	//Estilizações
+	al_destroy_bitmap(Est_futurista);
+	al_destroy_bitmap(Est_futurista_remove);
+	al_destroy_bitmap(assets_keys);
+	//Interface
+	al_destroy_bitmap(barra_vida);
+	al_destroy_bitmap(municao);
+	al_destroy_bitmap(est_interface);
+	al_destroy_bitmap(sprite_arma);
+	al_destroy_bitmap(died);
 	//destroi fonts,eventos e tela
 	al_destroy_font(font);
 	al_destroy_display(display);
@@ -717,7 +1355,14 @@ static int tela2() {
 	ALLEGRO_BITMAP* ossinhos = al_load_bitmap("./Estilizacoes/Ossinhos.png");
 	ALLEGRO_BITMAP* Est_futurista = al_load_bitmap("./Estilizacoes/Est_futurista.png");
 	ALLEGRO_BITMAP* Est_futurista_remove = al_load_bitmap("./Estilizacoes/Est_futurista_remove.png");
-
+	ALLEGRO_BITMAP* Est_futurista_remove2 = al_load_bitmap("./Estilizacoes/Est_futurista_remove2.png");
+	ALLEGRO_BITMAP* assets_keys = al_load_bitmap("./Estilizacoes/assets_keys.png");
+	ALLEGRO_BITMAP* barra_vida = al_load_bitmap("./Estilizacoes/barra_vida.png");
+	ALLEGRO_BITMAP* municao = al_load_bitmap("./Estilizacoes/municao.png");
+	ALLEGRO_BITMAP* est_interface = al_load_bitmap("./Estilizacoes/interface.png");
+	ALLEGRO_BITMAP* sprite_arma = al_load_bitmap("./Estilizacoes/sprite_arma.png");
+	//Tela
+	ALLEGRO_BITMAP* died = al_load_bitmap("./backgrounds/died.png");
 	//Entrada base
 	ALLEGRO_BITMAP* fundoporta = al_load_bitmap("./base/montanha.png");
 	ALLEGRO_BITMAP* porta = al_load_bitmap("./base/porta.png");
@@ -740,15 +1385,18 @@ static int tela2() {
 	}
 	Variaveis variaveis;
 	Iniciar_variaveis(&variaveis);
-	
+	int LIMITE_DIREITO = 950;
+	int LIMITE_ESQUERDO = 5;
 	//VARIÁVEIS INIMIGO
 	float frameinimigo = 0.f;
 	int enemy_pos_x = 1200;
 	int enemy_pos_y = 600;
 	int enemy_velocity = 3; // Velocidade do inimigo
+	bool enemy_alive = true;
 	bool enemy_moving_right = true; // Direção do movimento do inimigo
 	//CONTROLE ESTADO DO ENEMY
-	typedef enum { INIMIGO_RIGHT, INIMIGO_LEFT
+	typedef enum {
+		INIMIGO_RIGHT, INIMIGO_LEFT
 	} enemyState;
 
 	enemyState current_enemy_state = INIMIGO_RIGHT;
@@ -760,7 +1408,8 @@ static int tela2() {
 	bool gen_moving_right = true; // Direção do movimento do general
 
 	//CONTROLE DO ESTADO DO GENERAL
-	typedef enum { GEN_RIGHT, GEN_LEFT
+	typedef enum {
+		GEN_RIGHT, GEN_LEFT
 	} GenState;
 
 	GenState current_gen_state = GEN_RIGHT;
@@ -778,10 +1427,13 @@ static int tela2() {
 	int troncoX = 400;
 	bool troncoVivo = true;
 
-	typedef enum { WALKING_RIGHT, WALKING_LEFT, WALKING_SHOT_RIGHT, WALKING_SHOT_LEFT, JUMPING, IDLE_LEFT, IDLE_RIGHT, PEGAR
-	}characterState;
+	typedef enum {
+		WALKING_RIGHT, WALKING_LEFT, WALKING_SHOT_RIGHT, WALKING_SHOT_LEFT, JUMPING, IDLE_LEFT, IDLE_RIGHT, PEGAR
+	}WalkingState;
 
-	characterState jump_state = IDLE_RIGHT; //Manter estado atual
+	WalkingState jump_state = IDLE_RIGHT; //Manter estado atual
+
+
 	while (true) {
 		ALLEGRO_EVENT event;
 		al_wait_for_event(event_queue, &event);
@@ -789,69 +1441,104 @@ static int tela2() {
 		if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
 			break;
 		}
-		else if (event.keyboard.keycode == ALLEGRO_KEY_ESCAPE) { return false; }
 
-		else if (event.keyboard.keycode == ALLEGRO_KEY_SPACE) {
+		// Atualização do estado ao pressionar a tecla de pulo
+		else if (event.keyboard.keycode == ALLEGRO_KEY_SPACE && !variaveis.pulando) {
+			if (event.keyboard.keycode == ALLEGRO_KEY_RIGHT) {
+				variaveis.pos_x += 10;
+			}
+			else if (event.keyboard.keycode == ALLEGRO_KEY_LEFT) {
+				variaveis.pos_x -= 10;
+				break;
+			}
 			variaveis.pulo = 1;
 			variaveis.velocy = -variaveis.velocup;
-			variaveis.plimit = variaveis.pos_y - 140; //altura do pulo
-			jump_state = JUMPING;
+			variaveis.plimit = variaveis.pos_y - 140; // Altura máxima do pulo
+			jump_state = JUMPING; // Prioriza o estado de pulo
+			variaveis.pulando = true;
 		}
 
+		// Lógica de pulo
 		else if (variaveis.pulo) {
+			switch (event.keyboard.keycode) {
+			case ALLEGRO_KEY_RIGHT:
+				variaveis.pos_x += 10;
+				break;
+			case ALLEGRO_KEY_LEFT:
+				variaveis.pos_x -= 10;
+				break;
+			}
 			variaveis.pos_y += variaveis.velocy;
 			variaveis.velocy += 1;
 
-			if (variaveis.pos_y >= 380) {
+
+			if (variaveis.pos_y >= 380) { // Retorna ao chão
 				variaveis.pos_y = 380;
 				variaveis.pulo = 0;
 				variaveis.velocy = 0;
-				//Parar de pular ao encostar no chão
-				if (variaveis.moving_left) jump_state = WALKING_LEFT;
-				else jump_state = WALKING_RIGHT;
+				variaveis.pulando = false;
+
+				// Define o estado após o pulo com base no movimento
+				if (variaveis.moving_left) {
+					jump_state = WALKING_LEFT;
+				}
+				else {
+					jump_state = WALKING_RIGHT;
+				}
 			}
 		}
 
+		// Lógica de colisão para "Teste"
 		if (variaveis.pos_x + 75 > 320 && variaveis.pos_x < 350 && variaveis.pos_y + 128 > variaveis.pos_y && variaveis.pos_y < variaveis.pos_y + 100) {
 			al_draw_text(font, al_map_rgb(0, 0, 0), 640, 360, ALLEGRO_ALIGN_CENTER, "Teste");
 		}
 
-		switch (event.keyboard.keycode) {
-		case ALLEGRO_KEY_LEFT:
-			jump_state = WALKING_LEFT;
-			variaveis.pos_x -= 5;
-			variaveis.moving_left = true;
-			variaveis.mov = true;
-			break;
-		case ALLEGRO_KEY_RIGHT:
-			jump_state = WALKING_RIGHT;
-			variaveis.pos_x += 5;
-			variaveis.moving_left = false;
-			variaveis.mov = true;
-			break;
-		case ALLEGRO_KEY_V:
-			jump_state = PEGAR;
-			if (variaveis.pos_x > 465 && variaveis.pos_x < 530 && variaveis.pos_y + 128 > variaveis.pos_y && variaveis.pos_y < variaveis.pos_y + 100) {
-				kitmedicoX = -1000;
+		// Movimentação horizontal
+		if (!variaveis.pulando) { // Só muda estado se não estiver pulando
+			switch (event.keyboard.keycode) {
+			case ALLEGRO_KEY_LEFT:
+				if (variaveis.pos_x > LIMITE_ESQUERDO) {
+					jump_state = WALKING_LEFT;
+					variaveis.pos_x -= 5;
+					variaveis.moving_left = true;
+					variaveis.mov = true;
+				}
+				break;
+
+			case ALLEGRO_KEY_RIGHT:
+				if (variaveis.pos_x < LIMITE_DIREITO) {
+					jump_state = WALKING_RIGHT;
+					variaveis.pos_x += 5;
+					variaveis.moving_left = false;
+					variaveis.mov = true;
+				}
+				break;
+
+			case ALLEGRO_KEY_V:
+				jump_state = PEGAR;
+				if (variaveis.pos_x > 465 && variaveis.pos_x < 530 && variaveis.pos_y + 128 > variaveis.pos_y && variaveis.pos_y < variaveis.pos_y + 100) {
+					kitmedicoX = -1000;
+				}
+				else if (variaveis.pos_x > 560 && variaveis.pos_x < 670 && variaveis.pos_y + 128 > variaveis.pos_y && variaveis.pos_y < variaveis.pos_y + 100) {
+					kitmunicaoX = -1000;
+				}
+				break;
+
+			case ALLEGRO_KEY_B:
+				if (variaveis.moving_left) {
+					jump_state = WALKING_SHOT_LEFT;
+					variaveis.atirando = true;
+					variaveis.pos_x_bullet = variaveis.pos_x - 160;
+					al_play_sample(recursos.tiro, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+				}
+				else {
+					jump_state = WALKING_SHOT_RIGHT;
+					variaveis.atirando = true;
+					variaveis.pos_x_bullet = variaveis.pos_x + 160;
+					al_play_sample(recursos.tiro, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+				}
+				break;
 			}
-			else if (variaveis.pos_x > 560 && variaveis.pos_x < 670 && variaveis.pos_y + 128 > variaveis.pos_y && variaveis.pos_y < variaveis.pos_y + 100) {
-				kitmunicaoX = -1000;
-			}
-			break;
-		case ALLEGRO_KEY_B:
-			if (variaveis.moving_left == true) {
-				jump_state = WALKING_SHOT_LEFT;
-				variaveis.atirando = true;
-				variaveis.pos_x_bullet = variaveis.pos_x - 160;
-				al_play_sample(recursos.tiro, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
-			}
-			else {
-				jump_state = WALKING_SHOT_RIGHT;
-				variaveis.atirando = true;
-				variaveis.pos_x_bullet = variaveis.pos_x + 160;
-				al_play_sample(recursos.tiro, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
-			}
-			break;
 		}
 		if (event.type == ALLEGRO_EVENT_TIMER) {
 
@@ -904,16 +1591,6 @@ static int tela2() {
 			al_draw_bitmap(fundoporta, 780, 186, 0);
 			al_draw_bitmap(porta, 980, 340, 0);
 			al_draw_bitmap_region(Estilizacao_Alien, 0, 0, 300, 150, 760, 490, 0);
-	
-			switch (current_gen_state) {
-			case GEN_RIGHT: al_draw_bitmap_region(generalright, 98 * (int)framegeneral, 0, 98, 102, gen_pos_x, gen_pos_y, 0);
-				break;
-			case GEN_LEFT: al_draw_bitmap_region(generalleft, 98 * (int)framegeneral, 0, 98, 102, gen_pos_x, gen_pos_y, 0);
-				break;
-			default:
-				break;
-			}
-			
 
 			switch (jump_state) {
 			case WALKING_RIGHT: al_draw_bitmap_region(recursos.walkright, 256 * (int)variaveis.frame7px, variaveis.current_frame_y, 256, 256, variaveis.pos_x, variaveis.pos_y, 0);
@@ -928,10 +1605,12 @@ static int tela2() {
 			case WALKING_SHOT_LEFT: al_draw_bitmap_region(recursos.shot_image_left, 256 * (int)variaveis.frame4px, variaveis.current_frame_y, 256, 256, variaveis.pos_x, variaveis.pos_y, 0);
 				break;
 
-			case JUMPING:if (variaveis.moving_left) { al_draw_bitmap_region(recursos.jump_image, 256 * (int)variaveis.frame7px, variaveis.current_frame_y, 256, 256, variaveis.pos_x, variaveis.pos_y, ALLEGRO_FLIP_HORIZONTAL);
+			case JUMPING:if (variaveis.moving_left) {
+				al_draw_bitmap_region(recursos.jump_image, 256 * (int)variaveis.frame7px, variaveis.current_frame_y, 256, 256, variaveis.pos_x, variaveis.pos_y, ALLEGRO_FLIP_HORIZONTAL);
 				//Inverter imagem do pulo
 			}
-						else { al_draw_bitmap_region(recursos.jump_image, 256 * (int)variaveis.frame7px, variaveis.current_frame_y, 256, 256, variaveis.pos_x, variaveis.pos_y, 0);
+						else {
+				al_draw_bitmap_region(recursos.jump_image, 256 * (int)variaveis.frame7px, variaveis.current_frame_y, 256, 256, variaveis.pos_x, variaveis.pos_y, 0);
 			}
 						break;
 			case PEGAR: al_draw_bitmap_region(recursos.pegar_image, 256 * (int)variaveis.frame4px, variaveis.current_frame_y, 256, 256, variaveis.pos_x, variaveis.pos_y, 0);
@@ -950,11 +1629,100 @@ static int tela2() {
 				if (variaveis.moving_left) {
 					jump_state = IDLE_LEFT;
 				}
-				else { jump_state = IDLE_RIGHT;
+				else {
+					jump_state = IDLE_RIGHT;
 				}
 			}
 			variaveis.mov = false;
 		}
+
+		float largura = 195.0;
+
+		if (variaveis.pos_x > -50 && (event.keyboard.keycode == ALLEGRO_KEY_ESCAPE)) {
+
+			variaveis.countholo = 1;
+
+			bool alternate = true;
+			int controlQuest2 = 1;
+
+			// Loop principal do menu de alternativas
+			while (alternate) {
+				ALLEGRO_EVENT evento;
+				al_wait_for_event(event_queue, &evento);
+
+				if (evento.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
+					alternate = false;
+					break;
+				}
+
+				if (evento.type == ALLEGRO_EVENT_KEY_DOWN) {
+					switch (evento.keyboard.keycode) {
+					case ALLEGRO_KEY_UP:
+						controlQuest2++;
+						if (controlQuest2 > 2) {
+							controlQuest2 = 1;
+							largura -= 460; // Reset para a posição inicial
+						}
+						else {
+							largura += 230; // Avança para a próxima posição
+						}
+						break;
+
+					case ALLEGRO_KEY_DOWN:
+						controlQuest2--;
+						if (controlQuest2 < 1) {
+							controlQuest2 = 2;
+							largura += 460; // Reset para a última posição
+						}
+						else {
+							largura -= 230; // Retorna à posição anterior
+						}
+						break;
+					case ALLEGRO_KEY_ENTER:
+						// Confirma a alternativa escolhida
+						alternate = false;
+						break;
+
+					}
+				}
+
+				ALLEGRO_COLOR cor_padrao = al_map_rgb(41, 43, 43);
+				ALLEGRO_COLOR cor_selecionada = al_map_rgb(215, 219, 218);
+
+				al_draw_bitmap(recursos.pause, 210, 120, 0);
+				al_draw_text(font_realista, cor_padrao, 630, 214, ALLEGRO_ALIGN_CENTER, "PAUSE");
+
+				// Mostra as alternativas com destaque para a selecionada
+				switch (controlQuest2) {
+				case 1:
+					al_draw_text(font_realista, cor_selecionada, 630, 323, ALLEGRO_ALIGN_CENTER, "CONTINUAR");
+					al_draw_text(font_realista, cor_padrao, 630, 405, ALLEGRO_ALIGN_CENTER, "SAIR");
+
+					break;
+				case 2:
+					al_draw_text(font_realista, cor_padrao, 630, 323, ALLEGRO_ALIGN_CENTER, "CONTINUAR");
+					al_draw_text(font_realista, cor_selecionada, 630, 405, ALLEGRO_ALIGN_CENTER, "SAIR");
+					break;
+				}
+
+				al_flip_display();
+			}
+			if (controlQuest2 == 2) {
+				menu();
+			}
+			else if (controlQuest2 == 1) {
+				return false;
+			}
+			al_flip_display();
+			al_rest(2.0);
+
+		}
+		if (variaveis.pos_x > 940) {
+			al_draw_text(font, al_map_rgb(255, 255, 255), 1140, 360, ALLEGRO_ALIGN_CENTER, "Press ");
+			al_draw_bitmap_region(assets_keys, 240, 110, 60, 40, 1182, 357, 0);
+		}
+		Interface_tela(variaveis.erro, barra_vida, controlLife, est_interface, municao, sprite_arma, died);
+	
 		if (variaveis.pos_x > -50 && (event.keyboard.keycode == ALLEGRO_KEY_R)) {
 			variaveis.countholo = 1;
 
@@ -964,6 +1732,10 @@ static int tela2() {
 			// Definindo o tamanho final da tela (1280x720)
 			float largura_tela = 1280.0f;
 			float altura_tela = 720.0f;
+			float largura = 195.0;
+
+			int total_alternativas = 3;
+			int alternativa_selecionada = 0;
 
 			// Variáveis de escala
 			float escala_x = largura_tela / largura_original;   // Fator de escala na direção X
@@ -997,108 +1769,203 @@ static int tela2() {
 				ALLEGRO_COLOR cor_padrao = al_map_rgb(41, 43, 43);
 				ALLEGRO_COLOR cor_selecionada = al_map_rgb(215, 219, 218);
 				ALLEGRO_COLOR Resposta = al_map_rgb(215, 219, 218);
-				//HOLOGRAMA
+
+
+				/*al_draw_text(font_realista, controlQuest == 1 ? cor_selecionada : cor_padrao, 425, 340, ALLEGRO_ALIGN_CENTER, "5");
+				al_draw_text(font_realista,controlQuest == 2 ? cor_selecionada : cor_padrao, 655, 340, ALLEGRO_ALIGN_CENTER, "6");
+				al_draw_text(font_realista,controlQuest == 3 ? cor_selecionada : cor_padrao, 885, 340, ALLEGRO_ALIGN_CENTER, "2");
+				*/
+				bool alternate = true;
+
+
+				while (alternate) {
+					ALLEGRO_EVENT evento;
+					al_wait_for_event(event_queue, &evento);
+					if (evento.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
+						alternate = false;
+						break;
+					}
+
+					if (evento.type == ALLEGRO_EVENT_KEY_DOWN) {
+						switch (evento.keyboard.keycode) {
+						case ALLEGRO_KEY_RIGHT:
+							controlQuest++;
+							if (controlQuest > 3) {
+								controlQuest = 1;
+								largura -= 460; // Reset para a posição inicial
+							}
+							else {
+								largura += 230; // Avança para a próxima posição
+							}
+							break;
+
+						case ALLEGRO_KEY_LEFT:
+							controlQuest--;
+							if (controlQuest < 1) {
+								controlQuest = 3;
+								largura += 460; // Reset para a última posição
+							}
+							else {
+								largura -= 230; // Retorna à posição anterior
+							}
+							break;
+
+						case ALLEGRO_KEY_ENTER:
+							// Confirma a alternativa escolhida
+							alternate = false;
+							break;
+
+						case ALLEGRO_KEY_ESCAPE:
+							// Sai do menu sem escolher
+							alternate = false;
+							controlQuest = 0; // Nenhuma alternativa selecionada
+							break;
+						}
+					}
+
+					// Desenha o menu de alternativas
+					al_clear_to_color(al_map_rgb(0, 0, 0));
+
+					al_draw_scaled_bitmap(
+						holograma,
+						0, 0, // Coordenadas de origem na imagem
+						largura_original, altura_original, // Dimensões da imagem original
+						centro_x, centro_y, // Posição centralizada
+						largura_original * escala, altura_original * escala, // Dimensões escaladas
+						0 // Sem flags
+					);
+
+					al_draw_bitmap_region(Est_futurista_remove, 150, 200, 100, 100, 960, 460, 0);
+					al_draw_bitmap_region(Est_futurista_remove, 450, 120, 200, 110, 320, 300, 0);
+					al_draw_bitmap_region(Est_futurista_remove, 450, 120, 200, 110, 550, 300, 0);
+					al_draw_bitmap_region(Est_futurista_remove, 450, 120, 200, 110, 780, 300, 0);
+					al_draw_bitmap_region(Est_futurista_remove, 450, 120, 200, 110, 540, 180, 0);
+					al_draw_text(font, al_map_rgb(255, 255, 255), 630, 450, ALLEGRO_ALIGN_CENTER, "Parar abrir, é necessário");
+					al_draw_text(font, al_map_rgb(255, 255, 255), 630, 480, ALLEGRO_ALIGN_CENTER, "desvendar o mistério!");
+
+					//QUESTÃO
+					al_draw_text(font_realista, al_map_rgb(255, 255, 255), 642.5, 210, ALLEGRO_ALIGN_CENTER, "X + 14 = 20");
+
+					ALLEGRO_COLOR cor_padrao = al_map_rgb(41, 43, 43);
+					ALLEGRO_COLOR cor_selecionada = al_map_rgb(215, 219, 218);
+
+					// Mostra as alternativas com destaque para a selecionada
+					switch (controlQuest) {
+					case 1:
+						al_draw_text(font_realista, cor_selecionada, 420, 340, ALLEGRO_ALIGN_CENTER, "X = 34");
+						al_draw_text(font_realista, cor_padrao, 655, 340, ALLEGRO_ALIGN_CENTER, "X = -6");
+						al_draw_text(font_realista, cor_padrao, 880, 340, ALLEGRO_ALIGN_CENTER, "X = 6");
+						break;
+					case 2:
+						al_draw_text(font_realista, cor_padrao, 420, 340, ALLEGRO_ALIGN_CENTER, "X = 34");
+						al_draw_text(font_realista, cor_selecionada, 655, 340, ALLEGRO_ALIGN_CENTER, "X = -6");
+						al_draw_text(font_realista, cor_padrao, 880, 340, ALLEGRO_ALIGN_CENTER, "X = 6");
+						break;
+					case 3:
+						al_draw_text(font_realista, cor_padrao, 420, 340, ALLEGRO_ALIGN_CENTER, "X = 34");
+						al_draw_text(font_realista, cor_padrao, 655, 340, ALLEGRO_ALIGN_CENTER, "X = -6");
+						al_draw_text(font_realista, cor_selecionada, 880, 340, ALLEGRO_ALIGN_CENTER, "X = 6");
+						break;
+					}
+
+					al_flip_display();
+				}
+
+				// Mostra o resultado da alternativa escolhida
 				al_clear_to_color(al_map_rgb(0, 0, 0));
-				al_draw_scaled_bitmap(
-					holograma,
-					0, 0, // Coordenadas de origem na imagem
-					largura_original, altura_original, // Dimensões da imagem original
-					centro_x, centro_y, // Posição centralizada
-					largura_original* escala, altura_original* escala, // Dimensões escaladas
-					0 // Sem flags
-				);
-
-				al_draw_bitmap_region(Est_futurista_remove,150,200, 100, 100, 960, 460, 0);
-				al_draw_bitmap_region(Est_futurista_remove, 450, 120, 200, 110, 320, 300, 0);
-				al_draw_bitmap_region(Est_futurista_remove, 450, 120, 200, 110, 550, 300, 0);
-				al_draw_bitmap_region(Est_futurista_remove, 450, 120, 200, 110, 780, 300, 0);
-				al_draw_bitmap_region(Est_futurista_remove, 450, 120, 200, 110, 540, 180, 0);
-				al_draw_text(font, al_map_rgb(255, 255, 255), 630, 450, ALLEGRO_ALIGN_CENTER, "Parar abrir, é necessário");
-				al_draw_text(font, al_map_rgb(255, 255, 255), 630, 480, ALLEGRO_ALIGN_CENTER, "desvendar o mistério!");
-
-				//QUESTÃO
-				al_draw_text(font, al_map_rgb(255, 255, 255), 620, 210, ALLEGRO_ALIGN_CENTER, "Log");
-				al_draw_text(font, al_map_rgb(255, 255, 255), 648, 224, ALLEGRO_ALIGN_CENTER, "6");
-				al_draw_text(font, al_map_rgb(255, 255, 255), 680, 212, ALLEGRO_ALIGN_CENTER, "36");
-
-
-				switch (event.keyboard.keycode) {
-					// Movimenta o controle para a direita
-				case ALLEGRO_KEY_RIGHT:
-						controlQuest++;
-						if (controlQuest > 3) {
-							controlQuest = 1; // Volta para o início
-						}
-						break;
-					// Movimenta o controle para a esquerda
-				case ALLEGRO_KEY_LEFT:
-						controlQuest--;
-						if (controlQuest < 1) {
-							controlQuest = 3; // Vai para o final
-						}
-						break;
-					// Seleciona a alternativa atual
-				case ALLEGRO_KEY_ENTER:
-						Alternativa = controlQuest;
-						break;
-					// Reseta a escolha ao pressionar ESC
-				case ALLEGRO_KEY_ESCAPE:
-						Alternativa = 0;
-						break;
+				if (!(controlLife == 5)) {
+					al_draw_scaled_bitmap(
+						holograma,
+						0, 0, // Coordenadas de origem na imagem
+						largura_original, altura_original, // Dimensões da imagem original
+						centro_x, centro_y, // Posição centralizada
+						largura_original * escala, altura_original * escala, // Dimensões escaladas
+						0 // Sem flags
+					);
 				}
-				switch (controlQuest) {
-				case 1:
-					al_draw_text(font_realista, cor_selecionada, 425, 340, ALLEGRO_ALIGN_CENTER, "5");
-					al_draw_text(font_realista,cor_padrao, 655, 340, ALLEGRO_ALIGN_CENTER, "6");
-					al_draw_text(font_realista, cor_padrao, 885, 340, ALLEGRO_ALIGN_CENTER, "2");
-					break;
-				case 2:
-					al_draw_text(font_realista, cor_padrao, 425, 340, ALLEGRO_ALIGN_CENTER, "5");
-					al_draw_text(font_realista, cor_selecionada, 655, 340, ALLEGRO_ALIGN_CENTER, "6");
-					al_draw_text(font_realista, cor_padrao, 885, 340, ALLEGRO_ALIGN_CENTER, "2");
-					break;
-				case 3:
-					al_draw_text(font_realista, cor_padrao, 425, 340, ALLEGRO_ALIGN_CENTER, "5");
-					al_draw_text(font_realista, cor_padrao, 655, 340, ALLEGRO_ALIGN_CENTER, "6");
-					al_draw_text(font_realista, cor_selecionada, 885, 340, ALLEGRO_ALIGN_CENTER, "2");
-					break;
+				if (controlQuest == 3) {
+					al_draw_scaled_bitmap(
+						holograma,
+						0, 0, // Coordenadas de origem na imagem
+						largura_original, altura_original, // Dimensões da imagem original
+						centro_x, centro_y, // Posição centralizada
+						largura_original* escala, altura_original* escala, // Dimensões escaladas
+						0 // Sem flags
+					);
+					al_draw_text(font, al_map_rgb(255, 255, 255), 630, 330, ALLEGRO_ALIGN_CENTER, "Acesso concedido!");
+
+					al_flip_display();
+					al_rest(2.0);
 				}
-
-
-				// Mensagem de resultado com base na alternativa escolhida
-				if (Alternativa == 1) {
-					al_draw_text(font, al_map_rgb(255, 255, 255), 630, 40, ALLEGRO_ALIGN_CENTER, "Acesso concedido!");
+				else if ((controlQuest == 1 || controlQuest == 2) && !(controlLife == 5)) {
+					al_draw_text(font, al_map_rgb(255, 255, 255), 630, 330, ALLEGRO_ALIGN_CENTER, "Acesso bloqueado!");
 				}
-				else if (Alternativa == 2) {
-					al_draw_text(font, al_map_rgb(255, 255, 255), 630, 40, ALLEGRO_ALIGN_CENTER, "Acesso bloqueado!");
+				if (!(controlLife == 5)) {
+
+					al_flip_display();
+					al_rest(2.0);
 				}
-				else if (Alternativa == 3) {
-					al_draw_text(font, al_map_rgb(255, 255, 255), 630, 40, ALLEGRO_ALIGN_CENTER, "Acesso bloqueado!");
+				if (controlQuest == 3) {
+					tela3();
 				}
-
-
-
-
-
-
-
-				//al_draw_bitmap(Robo, 500, 500,0);
-
-				// Atualiza o display
-				al_flip_display();
-
-
-				/*// Sai ao pressionar ESC
-				ALLEGRO_KEYBOARD_STATE key_state;
-				al_get_keyboard_state(&key_state);
-				if (al_key_down(&key_state, ALLEGRO_KEY_ESCAPE)) {
+				if (!(controlLife == 6))
+				{
+					variaveis.erro = true;
+					controlLife++;
+					Interface_tela(variaveis.erro, barra_vida, controlLife, est_interface, municao, sprite_arma, died);
 					abrindo = false;
-				}*/
+				}
+				if (controlLife == 6) {
+					al_clear_to_color(al_map_rgb(255, 255, 255));
+					//Backgrounds
+					al_draw_bitmap(background_2, 0, 0, 0);
+					//Entrada base
+					al_draw_bitmap(fundoporta, 780, 186, 0);
+					al_draw_bitmap(porta, 980, 340, 0);
+					//Estilizações
+                     //Alien 1 x,y a
+					al_draw_bitmap_region(Estilizacao_Alien, 0, 0, 300, 150, 760, 490, 0);
+					//Cobras
+					al_draw_bitmap_region(Estilizacao_Alien, 320, 135, 127, 120, 240, 500, 0);
+					al_draw_bitmap_region(Estilizacao_Alien, 447, 150, 165, 100, 360, 510, 0);
+					//Ossos
+					al_draw_bitmap(ossinhos, 1120, 410, 0);
+					al_draw_bitmap(Rei, 1070, 390, 0);
+					Interface_tela(variaveis.erro, barra_vida, controlLife, est_interface, municao, sprite_arma, died);
+					al_flip_display();
+					al_rest(2.0);
+					menu();
+				}
+				
 			}
-
 		}
+		if (enemy_alive) {
+			if (enemy_moving_right) {
+				enemy_pos_x += enemy_velocity; // Move para a direita
+				current_enemy_state = INIMIGO_RIGHT;
+				if (enemy_pos_x > 1280 - 183) { // 183 é a largura do sprite do inimigo
+					enemy_moving_right = false; // Muda a direção para a esquerda
+				}
+			}
+			else {
+				enemy_pos_x -= enemy_velocity; // Move para a esquerda
+				current_enemy_state = INIMIGO_LEFT;
+				if (enemy_pos_x < 0) { // Verifica se atingiu o limite esquerdo
+					enemy_moving_right = true; // Muda a direção para a direita
+				}
+			}
+			// INIMIGO - renderiza apenas se estiver vivo
+			switch (current_enemy_state) {
+			case INIMIGO_RIGHT: al_draw_bitmap_region(inimigoleft, 61 * (int)frameinimigo, 0, 61, 64, enemy_pos_x, enemy_pos_y, 0);
+				break;
 
+			case INIMIGO_LEFT: al_draw_bitmap_region(inimigoright, 61 * (int)frameinimigo, 0, 61, 64, enemy_pos_x, enemy_pos_y, 0);
+				break;
+			default:
+				break;
 
+			}
+		}
 
 		if (variaveis.atirando) {
 			// Inicializa a posição da bala apenas uma vez
@@ -1111,11 +1978,11 @@ static int tela2() {
 			if (variaveis.bala_ativa) {
 				if (variaveis.moving_left == false) {
 					al_draw_bitmap(recursos.bullet_right, variaveis.pos_x_bullet, variaveis.pos_y + 167, 0);
-					variaveis.pos_x_bullet += 20.2f;
+					variaveis.pos_x_bullet += 80.0f;
 				}
 				else {
 					al_draw_bitmap(recursos.bullet_left, variaveis.pos_x_bullet, variaveis.pos_y + 167, 0);
-					variaveis.pos_x_bullet -= 20.2f;
+					variaveis.pos_x_bullet -= 80.0f;
 				}
 
 				// Verifica se a bala atingiu o tronco
@@ -1129,25 +1996,28 @@ static int tela2() {
 				}
 			}
 		}
-		else { variaveis.inicializado = false; // Reseta quando não está atirando
+		else {
+			variaveis.inicializado = false; // Reseta quando não está atirando
 		}
 
-		if (variaveis.pos_x_bullet > 1280) { variaveis.atirando = false;
+		if (variaveis.pos_x_bullet > 1280) {
+			variaveis.atirando = false;
 		}
-		else if (variaveis.pos_x_bullet < 0) { variaveis.atirando = false;
+		else if (variaveis.pos_x_bullet < 0) {
+			variaveis.atirando = false;
 		}
-		//MudanÃ§a de tela
-		if (variaveis.pos_x < -60) { tela1();
-		}
+		
 
 		al_flip_display();
 	}
+
 	//Backgrounds
 	al_destroy_bitmap(background_2);
 	al_destroy_bitmap(fundoporta);
 	al_destroy_bitmap(porta);
 	al_destroy_bitmap(holograma);
 	al_destroy_bitmap(hologramaexp);
+	al_destroy_bitmap(Robo);
 	//ObstÃ¡culos
 	al_destroy_bitmap(tronco3);
 	//ConsumÃ­veis
@@ -1161,8 +2031,17 @@ static int tela2() {
 	//Estilizacao
 	al_destroy_bitmap(Estilizacao_Alien);
 	al_destroy_bitmap(Estilizacao_Ossos);
+	al_destroy_bitmap(Est_futurista);
+	al_destroy_bitmap(Est_futurista_remove);
 	al_destroy_bitmap(ossinhos);
-	al_destroy_bitmap(Rei);
+	al_destroy_bitmap(Rei);al_destroy_bitmap(assets_keys);
+	//Interface
+	al_destroy_bitmap(barra_vida);
+	al_destroy_bitmap(municao);
+	al_destroy_bitmap(est_interface);
+	al_destroy_bitmap(sprite_arma);
+	al_destroy_bitmap(died);
+
 	//destroi fonts,eventos e tela
 	al_destroy_font(font);
 	al_destroy_display(display);
@@ -1198,14 +2077,26 @@ static int tela1() {
 	//Estilizações
 	ALLEGRO_BITMAP* EstAliens = al_load_bitmap("./Estilizacoes/EstAliens.png");
 	ALLEGRO_BITMAP* EstOssos = al_load_bitmap("./Estilizacoes/EstOssos.png");
+	//Holograma
+	ALLEGRO_BITMAP* holograma = al_load_bitmap("./backgrounds/holograma.jpg");
+	ALLEGRO_BITMAP* hologramaexp = al_load_bitmap("./backgrounds/hologramaexp.jpg");
+	ALLEGRO_BITMAP* Est_futurista = al_load_bitmap("./Estilizacoes/Est_futurista.png");
+	ALLEGRO_BITMAP* Est_futurista_remove = al_load_bitmap("./Estilizacoes/Est_futurista_remove.png");
+	ALLEGRO_BITMAP* assets_keys = al_load_bitmap("./Estilizacoes/assets_keys.png");
+	ALLEGRO_BITMAP* barra_vida = al_load_bitmap("./Estilizacoes/barra_vida.png");
+	ALLEGRO_BITMAP* municao = al_load_bitmap("./Estilizacoes/municao.png");
+	ALLEGRO_BITMAP* est_interface = al_load_bitmap("./Estilizacoes/interface.png");
+	ALLEGRO_BITMAP* sprite_arma = al_load_bitmap("./Estilizacoes/sprite_arma.png");
+	//Tela
+	ALLEGRO_BITMAP* died = al_load_bitmap("./backgrounds/died.png");
 	//Inimigos
 	ALLEGRO_BITMAP* drone = al_load_bitmap("./inimigos/drone.png");
 	ALLEGRO_SAMPLE* tiro = al_load_sample("./Audios/metralhadora.wav");
 	//FONTE
 	ALLEGRO_FONT* font_realista = al_load_font("./fonte/Seagram.ttf", 28, 0);
 	ALLEGRO_COLOR cor_padrao = al_map_rgb(41, 43, 43);
-	ALLEGRO_COLOR  cor_selecionada= al_map_rgb(215, 219, 218);
-	
+	ALLEGRO_COLOR  cor_selecionada = al_map_rgb(215, 219, 218);
+
 	//FILAS DE EVENTOS
 	ALLEGRO_EVENT_QUEUE* event_queue = al_create_event_queue();
 	al_register_event_source(event_queue, al_get_display_event_source(display1));
@@ -1217,7 +2108,7 @@ static int tela1() {
 		al_destroy_display(display1);  // Limpa o que foi alocado antes de encerrar
 		return -1;
 	}
-	
+
 	Variaveis variaveis;
 	Iniciar_variaveis(&variaveis);
 
@@ -1235,7 +2126,8 @@ static int tela1() {
 	float tempo_pausa = 0.0f;
 	float DURACAO_PAUSA = 3.0f;
 	bool troncoVivo = true, shot_control = false;
-	typedef enum { WALKING_RIGHT, WALKING_LEFT, WALKING_SHOT_RIGHT, WALKING_SHOT_LEFT, JUMPING, IDLE_LEFT, IDLE_RIGHT, PEGAR
+	typedef enum {
+		WALKING_RIGHT, WALKING_LEFT, WALKING_SHOT_RIGHT, WALKING_SHOT_LEFT, JUMPING, IDLE_LEFT, IDLE_RIGHT, PEGAR
 	}characterState;
 
 	characterState jump_state = IDLE_RIGHT; //Manter estado atual
@@ -1251,108 +2143,104 @@ static int tela1() {
 		}
 		//else if (event.keyboard.keycode == ALLEGRO_KEY_ESCAPE) { return false; }
 
-		else if (event.keyboard.keycode == ALLEGRO_KEY_SPACE) {
+		else if (event.keyboard.keycode == ALLEGRO_KEY_SPACE && !variaveis.pulando) {
+			if (event.keyboard.keycode == ALLEGRO_KEY_RIGHT) {
+				variaveis.pos_x += 10;
+			}
+			else if (event.keyboard.keycode == ALLEGRO_KEY_LEFT) {
+				variaveis.pos_x -= 10;
+				break;
+			}
 			variaveis.pulo = 1;
 			variaveis.velocy = -variaveis.velocup;
-			variaveis.plimit = variaveis.pos_y - 140; //altura do pulo
-			jump_state = JUMPING;
+			variaveis.plimit = variaveis.pos_y - 140; // Altura máxima do pulo
+			jump_state = JUMPING; // Prioriza o estado de pulo
+			variaveis.pulando = true;
 		}
 
+		// Lógica de pulo
 		else if (variaveis.pulo) {
+			switch (event.keyboard.keycode) {
+			case ALLEGRO_KEY_RIGHT:
+				variaveis.pos_x += 10;
+				break;
+			case ALLEGRO_KEY_LEFT:
+				variaveis.pos_x -= 10;
+				break;
+			}
 			variaveis.pos_y += variaveis.velocy;
 			variaveis.velocy += 1;
 
-			if (variaveis.pos_y >= 380) {
+
+			if (variaveis.pos_y >= 380) { // Retorna ao chão
 				variaveis.pos_y = 380;
 				variaveis.pulo = 0;
 				variaveis.velocy = 0;
-				//Parar de pular ao encostar no chão
-				if (variaveis.moving_left) jump_state = WALKING_LEFT;
-				else jump_state = WALKING_RIGHT;
+				variaveis.pulando = false;
+
+				// Define o estado após o pulo com base no movimento
+				if (variaveis.moving_left) {
+					jump_state = WALKING_LEFT;
+				}
+				else {
+					jump_state = WALKING_RIGHT;
+				}
 			}
 		}
-		
 
+		// Lógica de colisão para "Teste"
 		if (variaveis.pos_x + 75 > 320 && variaveis.pos_x < 350 && variaveis.pos_y + 128 > variaveis.pos_y && variaveis.pos_y < variaveis.pos_y + 100) {
 			al_draw_text(font, al_map_rgb(0, 0, 0), 640, 360, ALLEGRO_ALIGN_CENTER, "Teste");
 		}
 
-		switch (event.keyboard.keycode) {
-		case ALLEGRO_KEY_LEFT:
-			jump_state = WALKING_LEFT;
-			variaveis.pos_x -= 5;
-			variaveis.moving_left = true;
-			variaveis.mov = true;
-			break;
-		case ALLEGRO_KEY_RIGHT:
-			jump_state = WALKING_RIGHT;
-			variaveis.pos_x += 5;
-			variaveis.moving_left = false;
-			variaveis.mov = true;
-			break;
-		case ALLEGRO_KEY_V:
-			jump_state = PEGAR;
-			if (variaveis.pos_x > 465 && variaveis.pos_x < 530 && variaveis.pos_y + 128 > variaveis.pos_y && variaveis.pos_y < variaveis.pos_y + 100) {
-				kitmedicoX = -1000;
-			}
-			else if (variaveis.pos_x > 560 && variaveis.pos_x < 670 && variaveis.pos_y + 128 > variaveis.pos_y && variaveis.pos_y < variaveis.pos_y + 100) {
-				kitmunicaoX = -1000;
-			}
-			break;
-		case ALLEGRO_KEY_B:
-			if (variaveis.moving_left == true) {
-				jump_state = WALKING_SHOT_LEFT;
-				variaveis.atirando = true;
-				variaveis.pos_x_bullet = variaveis.pos_x - 160;
-				al_play_sample(tiro, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
-			}
-			else {
-				jump_state = WALKING_SHOT_RIGHT;
-				variaveis.atirando = true;
-				variaveis.pos_x_bullet = variaveis.pos_x + 160;
-				al_play_sample(tiro, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
-			}
-			break;
-		case ALLEGRO_KEY_ESCAPE:
-			variaveis.paused = !variaveis.paused;
-			break;
-		}
-		int controlador = 1;
-		if (variaveis.paused) {
+		// Movimentação horizontal
+		if (!variaveis.pulando) { // Só muda estado se não estiver pulando
+			switch (event.keyboard.keycode) {
+			case ALLEGRO_KEY_LEFT:
+				jump_state = WALKING_LEFT;
+				variaveis.pos_x -= 5;
+				variaveis.moving_left = true;
+				variaveis.mov = true;
 
-			al_draw_bitmap(recursos.pause, 210, 120, 0);
-			al_draw_text(font_realista, cor_padrao, 630, 214, ALLEGRO_ALIGN_CENTER, "PAUSE");
-			al_draw_text(font_realista, controlador == 2 ? cor_padrao : cor_selecionada, 630, 323, ALLEGRO_ALIGN_CENTER, "CONTINUAR");
-			al_draw_text(font_realista, controlador == 1 ? cor_padrao : cor_selecionada, 630, 405, ALLEGRO_ALIGN_CENTER, "SAIR");
+				break;
 
-			al_flip_display();
-			continue;
+			case ALLEGRO_KEY_RIGHT:
+					jump_state = WALKING_RIGHT;
+					variaveis.pos_x += 5;
+					variaveis.moving_left = false;
+					variaveis.mov = true;
+				break;
+
+			case ALLEGRO_KEY_V:
+				jump_state = PEGAR;
+				if (variaveis.pos_x > 465 && variaveis.pos_x < 530 && variaveis.pos_y + 128 > variaveis.pos_y && variaveis.pos_y < variaveis.pos_y + 100) {
+					kitmedicoX = -1000;
+				}
+				else if (variaveis.pos_x > 560 && variaveis.pos_x < 670 && variaveis.pos_y + 128 > variaveis.pos_y && variaveis.pos_y < variaveis.pos_y + 100) {
+					kitmunicaoX = -1000;
+				}
+				break;
+
+			case ALLEGRO_KEY_B:
+				if (variaveis.moving_left) {
+					jump_state = WALKING_SHOT_LEFT;
+					variaveis.atirando = true;
+					variaveis.pos_x_bullet = variaveis.pos_x - 160;
+					al_play_sample(recursos.tiro, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+				}
+				else {
+					jump_state = WALKING_SHOT_RIGHT;
+					variaveis.atirando = true;
+					variaveis.pos_x_bullet = variaveis.pos_x + 160;
+					al_play_sample(recursos.tiro, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+				}
+				break;
+			}
 		}
-		if (event.type == ALLEGRO_EVENT_KEY_DOWN) {
-			if (event.keyboard.keycode == ALLEGRO_KEY_UP) {
-				controlador++;
-				if (controlador == 2) {
-					controlador = 1;
-				}
-			}
-			else if (event.keyboard.keycode == ALLEGRO_KEY_DOWN) {
-				controlador--;
-				if (controlador ==1) {
-					controlador = 2;
-				}
-			}
-			else if (event.keyboard.keycode == ALLEGRO_KEY_ENTER) {
-				switch (controlador) {
-				case 2: tela1(); break;
-				case 1: menu();break;
-				}
-			}
-		}
-		
 		
 
 		if (event.type == ALLEGRO_EVENT_TIMER) {
-			
+
 			variaveis.tempo_animacao += 1.0 / FPS;
 
 			if (variaveis.tempo_animacao >= variaveis.frame_rate) {
@@ -1379,6 +2267,8 @@ static int tela1() {
 			//Consumíveis
 			al_draw_bitmap(kitmedico, kitmedicoX, 600, 0);
 			al_draw_bitmap(kitmunicao, kitmunicaoX, 600, 0);
+
+			Interface_tela(variaveis.erro, barra_vida, controlLife, est_interface, municao, sprite_arma, died);
 			//Inimigos
 			al_draw_bitmap(drone, 500, 200, 0);
 
@@ -1395,10 +2285,12 @@ static int tela1() {
 			case WALKING_SHOT_LEFT: al_draw_bitmap_region(recursos.shot_image_left, 256 * (int)variaveis.frame4px, variaveis.current_frame_y, 256, 256, variaveis.pos_x, variaveis.pos_y, 0);
 				break;
 
-			case JUMPING:if (variaveis.moving_left) { al_draw_bitmap_region(recursos.jump_image, 256 * (int)variaveis.frame7px, variaveis.current_frame_y, 256, 256, variaveis.pos_x, variaveis.pos_y, ALLEGRO_FLIP_HORIZONTAL);
+			case JUMPING:if (variaveis.moving_left) {
+				al_draw_bitmap_region(recursos.jump_image, 256 * (int)variaveis.frame7px, variaveis.current_frame_y, 256, 256, variaveis.pos_x, variaveis.pos_y, ALLEGRO_FLIP_HORIZONTAL);
 				//Inverter imagem do pulo
 			}
-						else { al_draw_bitmap_region(recursos.jump_image, 256 * (int)variaveis.frame7px, variaveis.current_frame_y, 256, 256, variaveis.pos_x, variaveis.pos_y, 0);
+						else {
+				al_draw_bitmap_region(recursos.jump_image, 256 * (int)variaveis.frame7px, variaveis.current_frame_y, 256, 256, variaveis.pos_x, variaveis.pos_y, 0);
 			}
 						break;
 			case PEGAR: al_draw_bitmap_region(recursos.pegar_image, 256 * (int)variaveis.frame4px, variaveis.current_frame_y, 256, 256, variaveis.pos_x, variaveis.pos_y, 0);
@@ -1414,12 +2306,101 @@ static int tela1() {
 			}
 			//Impede o mov de cancelar a animação de pulo, tiro e de pegar.
 			if (!(jump_state == WALKING_SHOT_LEFT) && !(jump_state == WALKING_SHOT_RIGHT) && !(jump_state == JUMPING) && !(jump_state == PEGAR)) {
-				if (variaveis.moving_left) { jump_state = IDLE_LEFT;
+				if (variaveis.moving_left) {
+					jump_state = IDLE_LEFT;
 				}
-				else { jump_state = IDLE_RIGHT;
+				else {
+					jump_state = IDLE_RIGHT;
 				}
 			}
 			variaveis.mov = false;
+		}
+		float largura = 195.0;
+		int total_alternativas = 3;
+		int alternativa_selecionada = 0;
+
+		if (variaveis.pos_x > -50 && (event.keyboard.keycode == ALLEGRO_KEY_ESCAPE)) {
+
+			variaveis.countholo = 1;
+
+			bool alternate = true;
+			int controlQuest = 1; 
+			
+			// Loop principal do menu de alternativas
+			while (alternate) {
+				ALLEGRO_EVENT evento;
+				al_wait_for_event(event_queue, &evento);
+
+				if (evento.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
+					alternate = false;
+					break;
+				}
+
+				if (evento.type == ALLEGRO_EVENT_KEY_DOWN) {
+					switch (evento.keyboard.keycode) {
+					case ALLEGRO_KEY_UP:
+						controlQuest++;
+						if (controlQuest > 2) {
+							controlQuest = 1;
+							largura -= 460; // Reset para a posição inicial
+						}
+						else {
+							largura += 230; // Avança para a próxima posição
+						}
+						break;
+
+					case ALLEGRO_KEY_DOWN:
+						controlQuest--;
+						if (controlQuest < 1) {
+							controlQuest = 2;
+							largura += 460; // Reset para a última posição
+						}
+						else {
+							largura -= 230; // Retorna à posição anterior
+						}
+						break;
+					case ALLEGRO_KEY_ENTER:
+						// Confirma a alternativa escolhida
+						alternate = false;
+						break;
+
+					}
+				}
+
+				// Desenha o menu de alternativas
+				
+				
+					al_draw_bitmap(recursos.pause, 210, 120, 0);
+					al_draw_text(font_realista, cor_padrao, 630, 214, ALLEGRO_ALIGN_CENTER, "PAUSE");
+
+				ALLEGRO_COLOR cor_padrao = al_map_rgb(41, 43, 43);
+				ALLEGRO_COLOR cor_selecionada = al_map_rgb(215, 219, 218);
+
+				// Mostra as alternativas com destaque para a selecionada
+				switch (controlQuest) {
+				case 1:
+					al_draw_text(font_realista, cor_selecionada, 630, 323, ALLEGRO_ALIGN_CENTER, "CONTINUAR");
+					al_draw_text(font_realista, cor_padrao , 630, 405, ALLEGRO_ALIGN_CENTER, "SAIR");
+
+					break;
+				case 2:
+					al_draw_text(font_realista, cor_padrao, 630, 323, ALLEGRO_ALIGN_CENTER, "CONTINUAR");
+					al_draw_text(font_realista, cor_selecionada, 630, 405, ALLEGRO_ALIGN_CENTER, "SAIR");
+					break;
+				}
+
+				al_flip_display();
+			}
+
+			// Mostra o resultado da alternativa escolhida
+			if (controlQuest == 2) {
+				menu();
+			}
+			else if (controlQuest == 1 ) {
+				return false;
+			}
+			al_flip_display();
+			al_rest(2.0);
 		}
 
 		if (variaveis.atirando) {
@@ -1432,11 +2413,11 @@ static int tela1() {
 			if (variaveis.bala_ativa) {
 				if (variaveis.moving_left == false) {
 					al_draw_bitmap(recursos.bullet_right, variaveis.pos_x_bullet, variaveis.pos_y + 167, 0);
-					variaveis.pos_x_bullet += 20.2f;
+					variaveis.pos_x_bullet += 80.0f;
 				}
 				else {
 					al_draw_bitmap(recursos.bullet_left, variaveis.pos_x_bullet, variaveis.pos_y + 167, 0);
-					variaveis.pos_x_bullet -= 20.2f;
+					variaveis.pos_x_bullet -= 80.0f;
 				}
 
 				// Verifica se a bala atingiu o tronco
@@ -1454,21 +2435,17 @@ static int tela1() {
 			variaveis.inicializado = false; // Reseta quando não está atirando
 		}
 
-		if (variaveis.pos_x_bullet > 1280) { variaveis.atirando = false;
+		if (variaveis.pos_x_bullet > 1280) {
+			variaveis.atirando = false;
 		}
-		else if (variaveis.pos_x_bullet < 0) { variaveis.atirando = false;
+		else if (variaveis.pos_x_bullet < 0) {
+			variaveis.atirando = false;
 		}
 
-		if (variaveis.pos_x > 1280) { tela2();
+		if (variaveis.pos_x > 1280) {
+			tela2();
 		}
 		if (variaveis.pos_x < 0) variaveis.pos_x = 0; // Hitbox do inicio
-		// Mecânica de escada
-		if (event.keyboard.keycode == ALLEGRO_KEY_RIGHT && variaveis.pos_x + 75 < 225) { variaveis.pos_y += 3;
-		}
-		else if (event.keyboard.keycode == ALLEGRO_KEY_LEFT) {
-			if (variaveis.pos_y > 380) { variaveis.pos_y -= 3;
-			}
-		}
 
 		al_flip_display();
 	}
@@ -1497,7 +2474,7 @@ static int menu() {
 	if (!inicializar_Allegro()) {
 		return -1;
 	}
-	
+
 	ALLEGRO_DISPLAY* display1 = al_create_display(1280, 720);
 	al_set_window_position(display1, 200, 200);
 
@@ -1511,6 +2488,7 @@ static int menu() {
 	//ALLEGRO_FONT* font = al_create_builtin_font();
 	ALLEGRO_FONT* font_realista = al_load_font("./fonte/Seagram.ttf", 28, 0);
 	ALLEGRO_FONT* font_nome_jogo = al_load_font("./fonte/Gimme.ttf", 30, 0);
+	ALLEGRO_BITMAP* interrogacao = al_load_bitmap("./Estilizacoes/interrogacao.png");
 	ALLEGRO_TIMER* timer = al_create_timer(1.0 / FPS);
 	//FILAS DE EVENTOS
 	ALLEGRO_EVENT_QUEUE* event_queue = al_create_event_queue();
@@ -1541,20 +2519,29 @@ static int menu() {
 		al_draw_text(font_nome_jogo, al_map_rgb(232, 237, 236), 620, 100, ALLEGRO_ALIGN_CENTER, "QUANTIC SOLDIER");
 		al_draw_text(font_realista, controlador == 3 ? cor_padrao : cor_selecionada, 635, 285, ALLEGRO_ALIGN_CENTER, "JOGAR");
 		al_draw_text(font_realista, controlador == 2 ? cor_padrao : cor_selecionada, 634, 430, ALLEGRO_ALIGN_CENTER, "TECLAS");
-		al_draw_text(font_realista, controlador == 1 ? cor_padrao: cor_selecionada, 630, 576, ALLEGRO_ALIGN_CENTER, "CREDITOS");
+		al_draw_text(font_realista, controlador == 1 ? cor_padrao : cor_selecionada, 630, 576, ALLEGRO_ALIGN_CENTER, "CREDITOS");
+		if (controlador == 4) {
+			al_draw_bitmap(interrogacao, 360, 102, 0);
+			al_draw_bitmap(interrogacao, 845, 102, 0);
+
+		}
 		if (event.type == ALLEGRO_EVENT_KEY_DOWN) {
 			if (event.keyboard.keycode == ALLEGRO_KEY_UP) {
 				controlador++;
-				if (controlador > 3) { controlador = 1;
+				if (controlador > 4) {
+					controlador = 1;
 				}
 			}
 			else if (event.keyboard.keycode == ALLEGRO_KEY_DOWN) {
 				controlador--;
-				if (controlador < 1) { controlador = 3;
+				if (controlador < 1) {
+					controlador = 3;
 				}
 			}
 			else if (event.keyboard.keycode == ALLEGRO_KEY_ENTER) {
 				switch (controlador) {
+				case 4: estado_menu = 4;
+					break;
 				case 3: tela1(); break;
 				case 2: estado_menu = 1;
 					break;
@@ -1562,22 +2549,31 @@ static int menu() {
 					break;
 				}
 			}
-		} else if (estado_menu == 1) {
+		}
+		else if (estado_menu == 1) {
 			al_draw_bitmap(menu_teclas, 0, 0, 0);
-			al_draw_text(font_realista,  cor_padrao, 630, 30, ALLEGRO_ALIGN_CENTER, "TECLAS");
+			al_draw_text(font_realista, cor_padrao, 630, 30, ALLEGRO_ALIGN_CENTER, "TECLAS");
 
-			if ( event.keyboard.keycode == ALLEGRO_KEY_ESCAPE) {
-				estado_menu = 0;
-			}
-		} else if (estado_menu == 2) {
-			al_draw_bitmap(menu_creditos, 0, 0, 0); 
-			//al_draw_text(creditos,credido, 500, 300, 0);
-			al_draw_text(font_realista, cor_padrao, 610, 30, ALLEGRO_ALIGN_CENTER, "CREDITOS");
-			if ( event.keyboard.keycode == ALLEGRO_KEY_ESCAPE) {
+			if (event.keyboard.keycode == ALLEGRO_KEY_V) {
 				estado_menu = 0;
 			}
 		}
+		else if (estado_menu == 2) {
+			al_draw_bitmap(menu_creditos, 0, 0, 0);
+			//al_draw_text(creditos,credido, 500, 300, 0);
+			al_draw_text(font_realista, cor_padrao, 610, 30, ALLEGRO_ALIGN_CENTER, "CREDITOS");
+			if (event.keyboard.keycode == ALLEGRO_KEY_V) {
+				estado_menu = 0;
+			}
+		}
+		else if (estado_menu == 4) {
+			al_draw_bitmap(menu_teclas, 0, 0, 0);
+			al_draw_text(font_realista, cor_padrao, 630, 30, ALLEGRO_ALIGN_CENTER, "HELP");
 
+			if (event.keyboard.keycode == ALLEGRO_KEY_ESCAPE) {
+				estado_menu = 0;
+			}
+		}
 		if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) { break; }
 
 		al_flip_display();
@@ -1597,7 +2593,6 @@ static int menu() {
 }
 int main()
 {
-	tela2();
-	//menu();
+	menu();
 	return 0;
 }
