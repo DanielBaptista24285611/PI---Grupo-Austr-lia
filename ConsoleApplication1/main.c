@@ -9,7 +9,7 @@
 
 #define MAX_INIMIGO 9
 
-float FPS = 20.0;
+float FPS = 30.0;
 bool inicializar_Allegro() {
 	if (!al_init()) {
 		fprintf(stderr, "Falha ao inicializar Allegro.\n");
@@ -622,7 +622,7 @@ static int tela4() {
 				menu();
 			}
 			else if (controlQuest2 == 1) {
-				return false;
+				return tela4();
 			}
 			al_flip_display();
 			al_rest(2.0);
@@ -994,63 +994,63 @@ static int tela3() {
 					break;
 				}
 
-					if (evento.type == ALLEGRO_EVENT_KEY_DOWN) {
-						switch (evento.keyboard.keycode) {
-						case ALLEGRO_KEY_UP:
-							controlQuest2++;
-							if (controlQuest2 > 2) {
-								controlQuest2 = 1;
-								largura -= 460; // Reset para a posição inicial
-							}
-							else {
-								largura += 230; // Avança para a próxima posição
-							}
-							break;
-
-						case ALLEGRO_KEY_DOWN:
-							controlQuest2--;
-							if (controlQuest2 < 1) {
-								controlQuest2 = 2;
-								largura += 460; // Reset para a última posição
-							}
-							else {
-								largura -= 230; // Retorna à posição anterior
-							}
-							break;
-						case ALLEGRO_KEY_ENTER:
-							// Confirma a alternativa escolhida
-							alternate = false;
-							break;
-
+				if (evento.type == ALLEGRO_EVENT_KEY_DOWN) {
+					switch (evento.keyboard.keycode) {
+					case ALLEGRO_KEY_UP:
+						controlQuest2++;
+						if (controlQuest2 > 2) {
+							controlQuest2 = 1;
+							largura -= 460; // Reset para a posição inicial
 						}
-					}
-
-					ALLEGRO_COLOR cor_padrao = al_map_rgb(41, 43, 43);
-					ALLEGRO_COLOR cor_selecionada = al_map_rgb(215, 219, 218);
-
-					al_draw_bitmap(recursos.pause, 210, 120, 0);
-					al_draw_text(font_realista, cor_padrao, 630, 214, ALLEGRO_ALIGN_CENTER, "PAUSE");
-
-					// Mostra as alternativas com destaque para a selecionada
-					switch (controlQuest2) {
-					case 1:
-						al_draw_text(font_realista, cor_selecionada, 630, 323, ALLEGRO_ALIGN_CENTER, "CONTINUAR");
-						al_draw_text(font_realista, cor_padrao, 630, 405, ALLEGRO_ALIGN_CENTER, "SAIR");
-
+						else {
+							largura += 230; // Avança para a próxima posição
+						}
 						break;
-					case 2:
-						al_draw_text(font_realista, cor_padrao, 630, 323, ALLEGRO_ALIGN_CENTER, "CONTINUAR");
-						al_draw_text(font_realista, cor_selecionada, 630, 405, ALLEGRO_ALIGN_CENTER, "SAIR");
-						break;
-					}
 
-					al_flip_display();
-			
+					case ALLEGRO_KEY_DOWN:
+						controlQuest2--;
+						if (controlQuest2 < 1) {
+							controlQuest2 = 2;
+							largura += 460; // Reset para a última posição
+						}
+						else {
+							largura -= 230; // Retorna à posição anterior
+						}
+						break;
+					case ALLEGRO_KEY_ENTER:
+						// Confirma a alternativa escolhida
+						alternate = false;
+						break;
+
+					}
+				}
+
+				ALLEGRO_COLOR cor_padrao = al_map_rgb(41, 43, 43);
+				ALLEGRO_COLOR cor_selecionada = al_map_rgb(215, 219, 218);
+
+				al_draw_bitmap(recursos.pause, 210, 120, 0);
+				al_draw_text(font_realista, cor_padrao, 630, 214, ALLEGRO_ALIGN_CENTER, "PAUSE");
+
+				// Mostra as alternativas com destaque para a selecionada
+				switch (controlQuest2) {
+				case 1:
+					al_draw_text(font_realista, cor_selecionada, 630, 323, ALLEGRO_ALIGN_CENTER, "CONTINUAR");
+					al_draw_text(font_realista, cor_padrao, 630, 405, ALLEGRO_ALIGN_CENTER, "SAIR");
+
+					break;
+				case 2:
+					al_draw_text(font_realista, cor_padrao, 630, 323, ALLEGRO_ALIGN_CENTER, "CONTINUAR");
+					al_draw_text(font_realista, cor_selecionada, 630, 405, ALLEGRO_ALIGN_CENTER, "SAIR");
+					break;
+				}
+
+				al_flip_display();
+			}
 			if (controlQuest2 == 2) {
 				menu();
 			}
 			else if (controlQuest2 == 1) {
-				return false;
+				return tela3();
 			}
 			al_flip_display();
 			al_rest(2.0);
@@ -1261,7 +1261,7 @@ static int tela3() {
 					al_flip_display();
 					al_rest(3.0);
 					menu();
-				}
+				
 				}
 			}
 			if (variaveis.atirando) {
@@ -1711,7 +1711,7 @@ static int tela2() {
 				menu();
 			}
 			else if (controlQuest2 == 1) {
-				return false;
+				return tela2();
 			}
 			al_flip_display();
 			al_rest(2.0);
@@ -2397,7 +2397,7 @@ static int tela1() {
 				menu();
 			}
 			else if (controlQuest == 1 ) {
-				return false;
+				return tela1();
 			}
 			al_flip_display();
 			al_rest(2.0);
